@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAGE RUNNER - DEFINITIVE EDITION</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #050505;
+      color: #fff;
+      font-family: 'Press Start 2P', 'Courier New', monospace;
+      user-select: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* CRT Scanline & Vignette Effect */
+    body::after {
+      content: " ";
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+        radial-gradient(circle, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 0.4) 100%);
+      background-size: 100% 4px, 100% 100%;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    #gameContainer {
+      position: relative;
+      width: 800px;
+      height: 500px;
+      background: #000;
+      border: 4px solid #ff0040;
+      box-shadow: 0 0 40px rgba(255, 0, 64, 0.4), inset 0 0 40px rgba(255, 0, 64, 0.1);
+      overflow: hidden;
+      z-index: 10;
+    }
+
+    canvas {
+      display: block;
+    }
+
+    .ui-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    #levelDisplay {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      font-size: 12px;
+      color: #00ff66;
+      text-shadow: 0 0 10px #00ff66;
+    }
+
+    #deathCounter {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      font-size: 12px;
+      color: #ff0040;
+      text-shadow: 0 0 10px #ff0040;
+    }
+
+    #effectBar {
+      position: absolute;
+      top: 35px;
+      left: 15px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .badge {
+      background: rgba(255, 170, 0, 0.15);
+      border: 1px solid #ffaa00;
+      color: #ffaa00;
+      font-size: 8px;
+      padding: 4px 6px;
+      border-radius: 2px;
+      text-shadow: 0 0 5px #ffaa00;
+      animation: pulse 1s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from {
+        opacity: 0.7;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    #tauntText {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.8);
+      font-size: 24px;
+      color: #ff0040;
+      text-shadow: 0 0 20px #ff0040, 4px 4px 0 #330011;
+      opacity: 0;
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      white-space: nowrap;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+
+    #tauntText.active {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    #progressBar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    #progressFill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ff0040, #ffaa00, #00ff66);
+      transition: width 0.1s linear;
+      box-shadow: 0 0 10px rgba(255, 0, 64, 0.5);
+    }
+
+    /* UI Screens */
+    .screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.92);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 30;
+      pointer-events: all;
+      text-align: center;
+    }
+
+    .screen.hidden {
+      display: none !important;
+    }
+
+    h1 {
+      font-size: 44px;
+      color: #ff0040;
+      text-shadow: 0 0 25px #ff0040, 4px 4px 0 #550011;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      font-size: 32px;
+      color: #ff0040;
+      text-shadow: 0 0 15px #ff0040, 3px 3px 0 #440011;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 10px;
+      color: #aaa;
+      margin: 6px 0;
+      line-height: 1.5;
+    }
+
+    .btn {
+      margin-top: 25px;
+      padding: 15px 30px;
+      font-size: 12px;
+      font-family: 'Press Start 2P', monospace;
+      background: transparent;
+      color: #ff0040;
+      border: 2px solid #ff0040;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn:hover {
+      background: #ff0040;
+      color: #000;
+      box-shadow: 0 0 25px rgba(255, 0, 64, 0.6);
+      transform: scale(1.05);
+    }
+
+    .btn:active {
+      transform: scale(0.95);
+    }
+
+    #deathTaunt {
+      font-size: 14px;
+      color: #ff6666;
+      margin: 15px 0;
+      line-height: 1.4;
+    }
+
+    .death-flash {
+      animation: flash 0.3s ease-out;
+    }
+
+    @keyframes flash {
+      0% {
+        box-shadow: inset 0 0 150px rgba(255, 0, 0, 0.8);
+      }
+
+      100% {
+        box-shadow: inset 0 0 0 transparent;
+      }
+    }
+
+    .shake {
+      animation: shake 0.2s cubic-bezier(.36, .07, .19, .97) both;
+    }
+
+    @keyframes shake {
+
+      10%,
+      90% {
+        transform: translate3d(-2px, 2px, 0);
+      }
+
+      20%,
+      80% {
+        transform: translate3d(3px, -2px, 0);
+      }
+
+      30%,
+      50%,
+      70% {
+        transform: translate3d(-5px, 4px, 0);
+      }
+
+      40%,
+      60% {
+        transform: translate3d(5px, -4px, 0);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="gameContainer">
+    <canvas id="gameCanvas" width="800" height="500"></canvas>
+
+    <div class="ui-layer">
+      <div id="levelDisplay">LV1 WELCOME TO HELL</div>
+      <div id="deathCounter">☠ 0</div>
+      <div id="effectBar"></div>
+      <div id="tauntText"></div>
+      <div id="progressBar">
+        <div id="progressFill"></div>
+      </div>
+    </div>
+
+    <div id="startScreen" class="screen">
+      <h1>RAGE RUNNER</h1>
+      <p style="color:#ff6666;">"You're not gonna make it lol"</p>
+      <br>
+      <p>A / D or LEFT / RIGHT to Move</p>
+      <p>SPACE or W to Jump</p>
+      <p>Press R for Instant Restart</p>
+      <br>
+      <p style="color:#ff0040; animation: pulse 1s infinite;">⚠ THIS GAME IS UNFAIR ⚠</p>
+      <button class="btn" id="startBtn">PLAY (BAD IDEA)</button>
+    </div>
+
+    <div id="deathScreen" class="screen hidden">
+      <h2>YOU DIED</h2>
+      <div id="deathTaunt"></div>
+      <p id="deathStats"></p>
+      <button class="btn" id="retryBtn">RETRY</button>
+    </div>
+
+    <div id="completeScreen" class="screen hidden">
+      <h2 style="color:#00ff66; text-shadow:0 0 20px #00ff66;">LEVEL CLEARED</h2>
+      <p id="completeTaunt" style="color:#ffaa00; margin-bottom: 15px;">Don't celebrate yet 😏</p>
+      <p id="completeStats"></p>
+      <button class="btn" id="nextBtn" style="color:#00ff66; border-color:#00ff66;">NEXT LEVEL</button>
+    </div>
+
+    <div id="winScreen" class="screen hidden">
+      <h2 style="color:#00ff66; text-shadow:0 0 25px #00ff66;">YOU WON?!</h2>
+      <p id="winMessage" style="color:#ffaa00; font-size:14px; margin:15px 0;"></p>
+      <p id="winDeaths"></p>
+      <button class="btn" id="restartBtn" style="color:#00ff66; border-color:#00ff66;">PLAY AGAIN?</button>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const W = 800, H = 500;
+
+// UI Elements
+const $ = id => document.getElementById(id);
+const ui = {
+  level: $('levelDisplay'), death: $('deathCounter'), effect: $('effectBar'),
+  taunt: $('tauntText'), prog: $('progressFill'),
+  screens: { start: $('startScreen'), dead: $('deathScreen'), comp: $('completeScreen'), win: $('winScreen') }
+};
+
+// Game State
+let state = 'start'; // start, play, dead, comp, win
+let deaths = 0, lvlDeaths = 0, currLvl = 0, frame = 0;
+let camX = 0, shakeT = 0, deathAnimT = 0, lastDeathX = 0;
+let particles = [], popups = [];
+
+// Modifiers
+let flipG = false, weakJ = false, weakJT = 0, invT = 0, darkT = 0, tinyT = 0, slipT = 0, windF = 0, windT = 0, tauntT = 0, quakeT = 0;
+
+// Physics Constants
+const G = 0.52, FRIC = 0.82, MAX_FALL = 13;
+
+// Player Object
+const P = {
+  x: 50, y: 380, w: 24, h: 24, vx: 0, vy: 0,
+  gnd: false, jp: -11, spd: 4.8, alive: true,
+  face: 1, sq: 1, st: 1, trail: []
+};
+
+// Input
+const keys = {};
+window.addEventListener('keydown', e => {
+  keys[e.code] = true;
+  if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
+  
+  if (e.code === 'KeyR' && state === 'play') killPlayer();
+  if ((e.code === 'Space' || e.code === 'Enter') && state === 'dead') {
+    ui.screens.dead.classList.add('hidden');
+    loadLvl(currLvl);
+  }
+  if ((e.code === 'Space' || e.code === 'Enter') && state === 'comp') {
+    ui.screens.comp.classList.add('hidden');
+    loadLvl(currLvl + 1);
+  }
+});
+window.addEventListener('keyup', e => keys[e.code] = false);
+
+// Taunts
+const deadTaunts = [
+  "LOL", "GIT GUD 💀", "skill issue fr fr", "maybe try minecraft?",
+  "LMAOOO GET REKT", "that was embarrassing", "have you tried jumping?",
+  "HAHAHAHA", "pathetic.", "💀💀💀", "uninstall tbh", "first time? 🤡", 
+  "you call that gaming?", "L + ratio", "bruh moment", "WASTED", 
+  "the floor sends its regards", "404: skill not found"
+];
+const compTaunts = ["don't celebrate yet 😈", "that was the EASY one", "took you long enough 🙄", "cute attempt. next one's worse 💀"];
+
+// Levels Data
+const lvls = [];
+function buildLvls() {
+  lvls.length = 0;
+
+  // LV1
+  lvls.push({
+    name: "WELCOME TO HELL", bg: "#080808", gnd: "#2a2a2a", start: {x:50, y:390}, len: 2000, door: {x:1900, y:378, w:42, h:62},
+    plats: [
+      {x:0, y:440, w:220, h:60, t:'solid'}, {x:220, y:440, w:60, h:60, t:'fake'}, {x:300, y:440, w:170, h:60, t:'solid'},
+      {x:500, y:440, w:40, h:60, t:'solid'}, {x:580, y:440, w:180, h:60, t:'solid'}, {x:760, y:440, w:60, h:60, t:'fake'},
+      {x:840, y:440, w:180, h:60, t:'solid'}, {x:1060, y:440, w:130, h:60, t:'solid'}, {x:1060, y:385, w:80, h:14, t:'dis', d:45},
+      {x:1230, y:440, w:170, h:60, t:'solid'}, {x:1440, y:440, w:210, h:60, t:'solid'}, {x:1440, y:390, w:55, h:14, t:'fake'},
+      {x:1690, y:440, w:310, h:60, t:'solid'}
+    ],
+    spks: [{x:470, y:418, w:30, h:22}, {x:1190, y:418, w:40, h:22}],
+    mspks: [], ceils: [{x:360, y:-20, w:55, h:22}, {x:940, y:-20, w:80, h:22}],
+    gravs: [], pads: [],
+    trolls: [
+      {x:180, t:'msg', m:"this seems easy right? 😏"}, {x:460, t:'weak', d:90}, {x:462, t:'msg', m:"NOODLE LEGS 🦵"},
+      {x:850, t:'msg', m:"watch your step 👀"}, {x:1380, t:'msg', m:"almost there... maybe 🤷"}
+    ]
+  });
+
+  // LV2
+  lvls.push({
+    name: "THE FLOOR IS A LIE", bg: "#110800", gnd: "#3d2200", start: {x:50, y:390}, len: 2200, door: {x:2100, y:378, w:42, h:62},
+    plats: [
+      {x:0, y:440, w:150, h:60, t:'solid'}, {x:190, y:440, w:90, h:60, t:'dis', d:50}, {x:320, y:400, w:90, h:22, t:'dis', d:40},
+      {x:450, y:360, w:90, h:22, t:'dis', d:45}, {x:580, y:440, w:130, h:60, t:'solid'}, {x:750, y:400, w:80, h:22, t:'dis', d:35},
+      {x:870, y:360, w:80, h:22, t:'dis', d:40}, {x:990, y:320, w:80, h:22, t:'dis', d:40}, {x:1110, y:440, w:110, h:60, t:'solid'},
+      {x:1260, y:440, w:90, h:60, t:'dis', d:26}, {x:1390, y:400, w:120, h:22, t:'solid'}, {x:1550, y:440, w:80, h:60, t:'dis', d:35},
+      {x:1670, y:380, w:100, h:22, t:'dis', d:40}, {x:1810, y:440, w:350, h:60, t:'solid'},
+    ],
+    spks: [{x:600, y:418, w:80, h:22}, {x:1120, y:418, w:70, h:22}],
+    mspks: [{x:810, y:440, w:22, h:22, sx:750, ex:940, s:2.5, dir:1}],
+    ceils: [{x:640, y:-20, w:60, h:22}, {x:1420, y:-20, w:100, h:22}],
+    gravs: [], pads: [{x:1400, y:390, w:35, h:10, f:-14}],
+    trolls: [
+      {x:100, t:'msg', m:"don't get comfortable 😈"}, {x:500, t:'weak', d:80}, {x:502, t:'msg', m:"WEAK JUMP ACTIVATED"},
+      {x:800, t:'msg', m:"the floor hates you"}, {x:1230, t:'slip', d:130}, {x:1232, t:'msg', m:"ICE ICE BABY 🧊"},
+      {x:1750, t:'msg', m:"GG... wait nah 😂"}
+    ]
+  });
+
+  // LV3
+  lvls.push({
+    name: "GRAVITY? LOL", bg: "#080012", gnd: "#220044", start: {x:50, y:390}, len: 2100, door: {x:1980, y:378, w:42, h:62},
+    plats: [
+      {x:0, y:440, w:170, h:60, t:'solid'}, {x:0, y:0, w:170, h:60, t:'solid'}, {x:230, y:440, w:120, h:60, t:'solid'},
+      {x:230, y:0, w:120, h:60, t:'solid'}, {x:440, y:440, w:100, h:60, t:'solid'}, {x:440, y:0, w:100, h:60, t:'solid'},
+      {x:620, y:440, w:120, h:60, t:'solid'}, {x:620, y:0, w:120, h:60, t:'solid'}, {x:800, y:440, w:80, h:60, t:'solid'},
+      {x:800, y:0, w:80, h:60, t:'solid'}, {x:950, y:440, w:170, h:60, t:'solid'}, {x:950, y:0, w:170, h:60, t:'solid'},
+      {x:1190, y:440, w:100, h:60, t:'solid'}, {x:1190, y:0, w:100, h:60, t:'solid'}, {x:1360, y:440, w:210, h:60, t:'solid'},
+      {x:1360, y:0, w:210, h:60, t:'solid'}, {x:1650, y:440, w:80, h:60, t:'dis', d:50}, {x:1650, y:0, w:80, h:60, t:'dis', d:50},
+      {x:1800, y:440, w:250, h:60, t:'solid'}, {x:1800, y:0, w:250, h:60, t:'solid'}
+    ],
+    spks: [{x:380, y:418, w:60, h:22}, {x:380, y:60, w:60, h:22}, {x:1290, y:418, w:70, h:22}, {x:1290, y:60, w:70, h:22}],
+    mspks: [{x:670, y:240, w:22, h:22, sx:620, ex:770, s:3, dir:1}], ceils: [],
+    gravs: [{x:200, y:0, w:30, h:500}, {x:530, y:0, w:30, h:500}, {x:780, y:0, w:25, h:500}, {x:1150, y:0, w:40, h:500}, {x:1610, y:0, w:40, h:500}, {x:1760, y:0, w:40, h:500}],
+    pads: [],
+    trolls: [
+      {x:50, t:'msg', m:"which way is up? 🙃"}, {x:380, t:'msg', m:"FLIP! 🔄"}, {x:730, t:'weak', d:65},
+      {x:732, t:'msg', m:"weak legs in zero-g 💀"}, {x:1100, t:'msg', m:"dizzy yet? 🌀"}, {x:1520, t:'inv', d:110},
+      {x:1522, t:'msg', m:"INVERTED + FLIPPED 🤯"}
+    ]
+  });
+
+  // LV4
+  lvls.push({
+    name: "SPIKE CITY 📌", bg: "#100000", gnd: "#3a0000", start: {x:30, y:390}, len: 2200, door: {x:2100, y:378, w:42, h:62},
+    plats: [
+      {x:0, y:440, w:120, h:60, t:'solid'}, {x:165, y:395, w:90, h:22, t:'solid'}, {x:300, y:355, w:90, h:22, t:'solid'},
+      {x:440, y:440, w:80, h:60, t:'solid'}, {x:560, y:380, w:75, h:22, t:'solid'}, {x:675, y:440, w:120, h:60, t:'solid'},
+      {x:845, y:395, w:75, h:22, t:'solid'}, {x:965, y:355, w:90, h:22, t:'solid'}, {x:1100, y:440, w:120, h:60, t:'solid'},
+      {x:1265, y:395, w:80, h:22, t:'dis', d:40}, {x:1390, y:355, w:75, h:22, t:'solid'}, {x:1510, y:315, w:75, h:22, t:'dis', d:45},
+      {x:1630, y:440, w:100, h:60, t:'solid'}, {x:1780, y:395, w:90, h:22, t:'solid'}, {x:1920, y:440, w:260, h:60, t:'solid'},
+    ],
+    spks: [{x:120, y:418, w:45, h:22}, {x:520, y:418, w:40, h:22}, {x:795, y:418, w:50, h:22}, {x:1220, y:418, w:45, h:22}, {x:1730, y:418, w:50, h:22}],
+    mspks: [
+      {x:210, y:280, w:22, h:22, sx:165, ex:390, s:3.5, dir:1}, {x:580, y:200, w:22, h:22, sx:440, ex:760, s:4.5, dir:-1},
+      {x:950, y:240, w:22, h:22, sx:845, ex:1060, s:3.5, dir:1}, {x:1200, y:180, w:22, h:22, sx:1100, ex:1380, s:5, dir:-1},
+      {x:1600, y:280, w:22, h:22, sx:1510, ex:1720, s:3.5, dir:1}
+    ],
+    ceils: [{x:240, y:-20, w:50, h:22}, {x:530, y:-20, w:50, h:22}, {x:890, y:-20, w:60, h:22}, {x:1320, y:-20, w:55, h:22}, {x:1700, y:-20, w:80, h:22}],
+    gravs: [], pads: [{x:305, y:345, w:32, h:10, f:-13}, {x:970, y:345, w:32, h:10, f:-12}],
+    trolls: [
+      {x:80, t:'msg', m:"dodge THIS 💀"}, {x:310, t:'wind', d:150, f:1.5}, {x:312, t:'msg', m:"💨 HEADWIND 💨"},
+      {x:690, t:'msg', m:"spikes go brrr 📌"}, {x:1060, t:'weak', d:95}, {x:1062, t:'msg', m:"ur still alive?? 🤨"},
+      {x:1480, t:'dark', d:95}, {x:1482, t:'msg', m:"LIGHTS OUT 🌑"}, {x:1870, t:'msg', m:"final stretch... 😈"}
+    ]
+  });
+
+  // LV5
+  lvls.push({
+    name: "TRUST NOBODY 🤥", bg: "#001100", gnd: "#003a00", start: {x:30, y:390}, len: 2000, door: {x:1880, y:378, w:42, h:62},
+    plats: [
+      {x:0, y:440, w:120, h:60, t:'solid'}, {x:160, y:440, w:95, h:60, t:'fake'}, {x:160, y:392, w:95, h:22, t:'solid'},
+      {x:295, y:440, w:80, h:60, t:'solid'}, {x:415, y:440, w:120, h:60, t:'fake'}, {x:435, y:372, w:80, h:22, t:'solid'},
+      {x:575, y:440, w:120, h:60, t:'solid'}, {x:735, y:440, w:100, h:60, t:'fake'}, {x:735, y:342, w:100, h:22, t:'solid'},
+      {x:880, y:440, w:100, h:60, t:'solid'}, {x:1020, y:440, w:80, h:60, t:'fake'}, {x:1010, y:392, w:100, h:22, t:'solid'},
+      {x:1150, y:440, w:100, h:60, t:'solid'}, {x:1290, y:440, w:120, h:60, t:'solid'}, {x:1290, y:378, w:50, h:14, t:'fake'},
+      {x:1450, y:392, w:80, h:22, t:'solid'}, {x:1570, y:440, w:100, h:60, t:'dis', d:30}, {x:1710, y:440, w:240, h:60, t:'solid'},
+      {x:1710, y:386, w:60, h:14, t:'fake'}
+    ],
+    spks: [{x:255, y:418, w:40, h:22}, {x:545, y:418, w:30, h:22}, {x:970, y:418, w:50, h:22}, {x:1250, y:418, w:40, h:22}, {x:1530, y:418, w:40, h:22}],
+    mspks: [
+      {x:340, y:285, w:22, h:22, sx:295, ex:490, s:2.5, dir:1}, {x:790, y:235, w:22, h:22, sx:735, ex:950, s:3, dir:-1},
+      {x:1370, y:285, w:22, h:22, sx:1290, ex:1520, s:3.5, dir:1}
+    ],
+    ceils: [{x:400, y:-20, w:60, h:22}, {x:790, y:-20, w:80, h:22}, {x:1180, y:-20, w:60, h:22}],
+    gravs: [], pads: [{x:890, y:428, w:32, h:10, f:-15}],
+    trolls: [
+      {x:60, t:'msg', m:"real or fake? 🤔"}, {x:275, t:'inv', d:95}, {x:277, t:'msg', m:"CONTROLS REVERSED 🔄"},
+      {x:580, t:'dark', d:80}, {x:582, t:'msg', m:"can't see? too bad 😎"}, {x:850, t:'msg', m:"nothing suspicious 👀"},
+      {x:1050, t:'tiny', d:145}, {x:1052, t:'msg', m:"SMOL MODE 🐜"}, {x:1360, t:'slip', d:115},
+      {x:1362, t:'msg', m:"ice ice baby 🧊"}, {x:1660, t:'msg', m:"almost... trust nothing"}
+    ]
+  });
+
+  // LV6
+  lvls.push({
+    name: "THE GAUNTLET ☠", bg: "#0a000a", gnd: "#330033", start: {x:20, y:390}, len: 2800, door: {x:2680, y:378, w:42, h:62},
+    plats: [
+      {x:0, y:440, w:100, h:60, t:'solid'}, {x:140, y:392, w:70, h:22, t:'dis', d:30}, {x:255, y:352, w:70, h:22, t:'solid'},
+      {x:370, y:440, w:60, h:60, t:'fake'}, {x:360, y:310, w:80, h:22, t:'solid'}, {x:490, y:440, w:100, h:60, t:'solid'},
+      {x:490, y:0, w:100, h:60, t:'solid'}, {x:650, y:440, w:60, h:60, t:'solid'}, {x:650, y:0, w:60, h:60, t:'solid'},
+      {x:770, y:440, w:80, h:60, t:'dis', d:24}, {x:770, y:0, w:80, h:60, t:'dis', d:24}, {x:910, y:440, w:130, h:60, t:'solid'},
+      {x:910, y:0, w:130, h:60, t:'solid'}, {x:1100, y:392, w:60, h:22, t:'fake'}, {x:1080, y:342, w:80, h:22, t:'solid'},
+      {x:1210, y:440, w:80, h:60, t:'solid'}, {x:1340, y:378, w:70, h:22, t:'dis', d:35}, {x:1460, y:440, w:100, h:60, t:'solid'},
+      {x:1600, y:392, w:55, h:22, t:'solid'}, {x:1700, y:440, w:70, h:60, t:'fake'}, {x:1690, y:342, w:80, h:22, t:'solid'},
+      {x:1820, y:440, w:120, h:60, t:'solid'}, {x:1990, y:440, w:60, h:60, t:'dis', d:26}, {x:2100, y:392, w:70, h:22, t:'solid'},
+      {x:2220, y:440, w:80, h:60, t:'solid'}, {x:2350, y:372, w:90, h:22, t:'dis', d:32}, {x:2490, y:440, w:280, h:60, t:'solid'},
+    ],
+    spks: [
+      {x:210, y:418, w:45, h:22}, {x:590, y:418, w:60, h:22}, {x:1040, y:418, w:60, h:22},
+      {x:1290, y:418, w:50, h:22}, {x:1560, y:418, w:40, h:22}, {x:1780, y:418, w:40, h:22}, {x:2290, y:418, w:50, h:22}
+    ],
+    mspks: [
+      {x:180, y:240, w:22, h:22, sx:120, ex:330, s:4, dir:1}, {x:570, y:195, w:22, h:22, sx:490, ex:730, s:5, dir:-1},
+      {x:1080, y:265, w:22, h:22, sx:1010, ex:1230, s:3.5, dir:1}, {x:1520, y:195, w:22, h:22, sx:1420, ex:1680, s:4.5, dir:-1},
+      {x:2020, y:285, w:22, h:22, sx:1940, ex:2180, s:4, dir:1}, {x:2400, y:245, w:22, h:22, sx:2300, ex:2550, s:5, dir:-1}
+    ],
+    ceils: [{x:300, y:-20, w:50, h:22}, {x:700, y:-20, w:60, h:22}, {x:1200, y:-20, w:55, h:22}, {x:1640, y:-20, w:60, h:22}, {x:2070, y:-20, w:80, h:22}, {x:2380, y:-20, w:55, h:22}],
+    gravs: [{x:470, y:0, w:30, h:500}, {x:740, y:0, w:30, h:500}, {x:1440, y:0, w:30, h:500}],
+    pads: [{x:260, y:342, w:30, h:10, f:-14}, {x:1215, y:428, w:30, h:10, f:-13}, {x:2105, y:382, w:30, h:10, f:-15}],
+    trolls: [
+      {x:40, t:'msg', m:"FINAL LEVEL 💀 good luck LOL"}, {x:215, t:'weak', d:75}, {x:390, t:'msg', m:"everything at once 😈"},
+      {x:590, t:'inv', d:85}, {x:592, t:'msg', m:"REVERSED IN FLIP ZONE 🤯"}, {x:790, t:'dark', d:70},
+      {x:792, t:'msg', m:"LIGHTS OUT SKILL ISSUE 😂"}, {x:980, t:'wind', d:120, f:2}, {x:982, t:'msg', m:"💨 WIND SAID NO 💨"},
+      {x:1170, t:'tiny', d:115}, {x:1350, t:'msg', m:"so tiny so fragile 🐜"}, {x:1500, t:'slip', d:105},
+      {x:1680, t:'weak', d:95}, {x:1800, t:'msg', m:"ALMOST... don't choke 😬"}, {x:2010, t:'inv', d:80},
+      {x:2012, t:'msg', m:"INVERTED AGAIN BYE 👋"}, {x:2200, t:'quake', d:80}, {x:2202, t:'msg', m:"EARTHQUAKE 🌋"},
+      {x:2450, t:'msg', m:"THE DOOR!! GOOOO!! 🚪"}
+    ]
+  });
+}
+
+function initPlat(p) {
+  p.gone = false; p.timer = 0; p.touched = false; p.rev = false; p.shx = 0;
+}
+
+function loadLvl(idx) {
+  currLvl = idx;
+  const L = lvls[idx];
+  
+  flipG = false; weakJ = false; weakJT = 0; invT = 0; darkT = 0; tinyT = 0; slipT = 0; windF = 0; windT = 0; quakeT = 0;
+  shakeT = 0; particles = []; popups = []; deathAnimT = 0; lvlDeaths = 0;
+
+  L.plats.forEach(initPlat);
+  L.ceils.forEach(c => { c.trig = false; c.cy = c.y; c.vy = 0; });
+  L.mspks.forEach(s => s.x = s.sx);
+  L.gravs.forEach(g => g.on = false);
+  L.trolls.forEach(t => t.trig = false);
+
+  P.x = L.start.x; P.y = L.start.y;
+  P.vx = 0; P.vy = 0; P.w = 24; P.h = 24;
+  P.gnd = false; P.alive = true; P.face = 1; P.sq = 1; P.st = 1; P.trail = [];
+  
+  for (let k in keys) keys[k] = false;
+  camX = 0;
+  
+  ui.level.textContent = `LV${idx+1}: ${L.name}`;
+  ui.taunt.classList.remove('active');
+}
+
+function showTaunt(msg) {
+  ui.taunt.textContent = msg;
+  ui.taunt.classList.add('active');
+  tauntT = 90;
+}
+
+function shake(amt) {
+  shakeT = Math.max(shakeT, amt);
+}
+
+function popup(x, y, txt, col) {
+  popups.push({x, y, txt, col, life: 55, max: 55, vy: -1.2});
+}
+
+function emit(x, y, c, n, sp) {
+  for (let i=0; i<n; i++) particles.push({
+    x, y, vx: (Math.random()-0.5)*sp, vy: (Math.random()-0.5)*sp-2,
+    c, sz: 1.5+Math.random()*4, life: 20+Math.random()*30
+  });
+}
+
+function killPlayer() {
+  if (!P.alive) return;
+  P.alive = false; deaths++; lvlDeaths++;
+  ui.death.textContent = `☠ ${deaths}`;
+  
+  emit(P.x+P.w/2, P.y+P.h/2, '#ff0040', 40, 10);
+  shake(18);
+  $('gameContainer').classList.remove('death-flash');
+  void $('gameContainer').offsetWidth;
+  $('gameContainer').classList.add('death-flash');
+  
+  lastDeathX = P.x; deathAnimT = 25;
+
+  setTimeout(() => {
+    let tnt = deadTaunts[Math.floor(Math.random() * deadTaunts.length)];
+    if(deaths===10) tnt="10 deaths already?? 💀";
+    if(deaths===25) tnt="25 DEATHS. consider a career change";
+    if(deaths===50) tnt="FIFTY DEATHS. I'm actually impressed";
+    if(deaths===69) tnt="nice... wait no that's 69 deaths 😂";
+    if(deaths===100) tnt="💯 DEATHS ACHIEVEMENT UNLOCKED 💯";
+    
+    $('deathTaunt').textContent = tnt;
+    $('deathStats').textContent = `Level Deaths: ${lvlDeaths} | Total: ${deaths}`;
+    ui.screens.dead.classList.remove('hidden');
+    state = 'dead';
+  }, 350);
+}
+
+// Robust AABB overlap check
+function aabb(ax, ay, aw, ah, bx, by, bw, bh) {
+  return ax < bx+bw && ax+aw > bx && ay < by+bh && ay+ah > by;
+}
+
+function update() {
+  if (state !== 'play' || !P.alive) return;
+  frame++;
+  const L = lvls[currLvl];
+  const gDir = flipG ? -1 : 1;
+  const grav = G * gDir;
+  const jp = weakJ ? P.jp * 0.55 : P.jp;
+  
+  // Timers
+  if(weakJT>0 && !--weakJT) weakJ = false;
+  if(invT>0) invT--;
+  if(darkT>0) darkT--;
+  if(tinyT>0 && !--tinyT) { P.w = 24; P.h = 24; }
+  if(slipT>0) slipT--;
+  if(windT>0 && !--windT) windF = 0;
+  if(quakeT>0) { quakeT--; shake(3); }
+  if(tauntT>0 && !--tauntT) ui.taunt.classList.remove('active');
+
+  // UI Effects
+  let eff = [];
+  if(weakJ) eff.push('<span class="badge">🦵WEAK</span>');
+  if(invT>0) eff.push('<span class="badge">🔄INVERT</span>');
+  if(darkT>0) eff.push('<span class="badge">🌑DARK</span>');
+  if(tinyT>0) eff.push('<span class="badge">🐜TINY</span>');
+  if(slipT>0) eff.push('<span class="badge">🧊ICE</span>');
+  if(windT>0) eff.push('<span class="badge">💨WIND</span>');
+  if(quakeT>0) eff.push('<span class="badge">🌋QUAKE</span>');
+  ui.effect.innerHTML = eff.join('');
+
+  // Input
+  let ml = keys['ArrowLeft'] || keys['KeyA'];
+  let mr = keys['ArrowRight'] || keys['KeyD'];
+  let mj = keys['Space'] || keys['ArrowUp'] || keys['KeyW'];
+  
+  if(invT>0) { let t = ml; ml = mr; mr = t; }
+
+  const acc = slipT>0 ? 0.22 : 1;
+  const fri = slipT>0 ? 0.98 : FRIC;
+
+  if(ml) { P.vx -= P.spd * acc * 0.35; P.face = -1; }
+  if(mr) { P.vx += P.spd * acc * 0.35; P.face = 1; }
+  P.vx *= fri;
+  if(windF) P.vx += windF * 0.08;
+  P.vx = Math.max(-P.spd, Math.min(P.spd, P.vx));
+  if(Math.abs(P.vx) < 0.1) P.vx = 0;
+
+  if(mj && P.gnd) {
+    P.vy = jp * gDir; P.gnd = false;
+    P.sq = 0.6; P.st = 1.4;
+    emit(P.x+P.w/2, P.y+(flipG?0:P.h), '#fff', 4, 4);
+  }
+
+  P.vy += grav;
+  P.vy = Math.max(-MAX_FALL, Math.min(MAX_FALL, P.vy));
+
+  // --- STRICT AABB PHYSICS ENGINE ---
+  
+  // 1. Move X
+  P.x += P.vx;
+  
+  // 2. Resolve X
+  L.plats.forEach(p => {
+    if(p.gone || p.t === 'fake') return;
+    // Shrink Y hitbox by 1px to prevent snagging on floor while sliding
+    if (aabb(P.x, P.y+1, P.w, P.h-2, p.x, p.y, p.w, p.h)) {
+      if (P.vx > 0) { P.x = p.x - P.w; P.vx = 0; }
+      else if (P.vx < 0) { P.x = p.x + p.w; P.vx = 0; }
+    }
+  });
+
+  // 3. Move Y
+  P.y += P.vy;
+  P.gnd = false;
+
+  // 4. Resolve Y
+  L.plats.forEach(p => {
+    if(p.gone) return;
+    
+    // Fake platform logic
+    if(p.t === 'fake') {
+      if(!p.rev && aabb(P.x+1, P.y, P.w-2, P.h, p.x, p.y, p.w, p.h)) {
+        p.rev = true;
+        emit(p.x+p.w/2, p.y+p.h/2, '#ff4444', 20, 6);
+        popup(p.x+p.w/2, p.y-10, "FAKE! 😂", "#ff4444");
+        shake(5);
+      }
+      return;
+    }
+
+    // Shrink X hitbox by 1px to prevent snagging on walls while falling
+    if (aabb(P.x+1, P.y, P.w-2, P.h, p.x, p.y, p.w, p.h)) {
+      if (!flipG) {
+        if (P.vy > 0) {
+          P.y = p.y - P.h; P.vy = 0; P.gnd = true;
+          if(P.st>1.1) { P.sq=1.3; P.st=0.7; }
+          if(p.t==='dis' && !p.touched) { p.touched=true; p.timer=p.d; }
+        } else if (P.vy < 0) {
+          P.y = p.y + p.h; P.vy = 0;
+        }
+      } else {
+        if (P.vy < 0) {
+          P.y = p.y + p.h; P.vy = 0; P.gnd = true;
+          if(P.st>1.1) { P.sq=1.3; P.st=0.7; }
+          if(p.t==='dis' && !p.touched) { p.touched=true; p.timer=p.d; }
+        } else if (P.vy > 0) {
+          P.y = p.y - P.h; P.vy = 0;
+        }
+      }
+    }
+  });
+
+  // Disappear Logic
+  L.plats.forEach(p => {
+    if(p.t!=='dis') return;
+    if(p.touched && p.timer>0) {
+      p.timer--;
+      p.shx = p.timer<15 ? (Math.random()-0.5)*4 : 0;
+      if(!p.timer) { p.gone=true; p.respawnT=150; emit(p.x+p.w/2, p.y, '#ffaa00', 12, 5); }
+    }
+    if(p.gone && !--p.respawnT) { p.gone=false; p.timer=0; p.touched=false; p.shx=0; }
+  });
+
+  // Pads, Grav, Spikes
+  L.pads.forEach(b => {
+    if(aabb(P.x, P.y, P.w, P.h, b.x, b.y, b.w, b.h)) {
+      P.vy = b.f * (flipG?-1:1); P.gnd=false; emit(b.x+b.w/2, b.y, '#00ffaa', 12, 6); shake(4);
+    }
+  });
+
+  L.gravs.forEach(g => {
+    let inZ = aabb(P.x, P.y, P.w, P.h, g.x, g.y, g.w, g.h);
+    if(inZ && !g.on) {
+      flipG = !flipG; g.on = true;
+      emit(P.x+P.w/2, P.y+P.h/2, '#aa44ff', 20, 7); shake(8); popup(P.x+P.w/2, P.y-25, "FLIP! 🙃", "#aa44ff");
+    }
+    if(!inZ) g.on = false;
+  });
+
+  L.spks.forEach(s => { if(aabb(P.x+2, P.y+2, P.w-4, P.h-4, s.x, s.y, s.w, s.h)) killPlayer(); });
+  L.mspks.forEach(s => {
+    s.x += s.s * s.dir;
+    if(s.x<=s.sx || s.x>=s.ex) s.dir *= -1;
+    if(aabb(P.x+2, P.y+2, P.w-4, P.h-4, s.x, s.y, s.w, s.h)) killPlayer();
+  });
+
+  L.ceils.forEach(c => {
+    if(!c.trig && Math.abs((P.x+P.w/2)-(c.x+c.w/2))<110) { c.trig=true; c.vy=0; }
+    if(c.trig) {
+      c.vy += 0.48; c.cy += c.vy;
+      if(aabb(P.x+2, P.y+2, P.w-4, P.h-4, c.x, c.cy, c.w, c.h)) killPlayer();
+      if(c.cy > H+60) { c.cy = c.y; c.trig = false; c.vy = 0; }
+    }
+  });
+
+  // Trolls
+  L.trolls.forEach(t => {
+    if(t.trig) return;
+    if(P.x+P.w > t.x && P.x < t.x+30) {
+      t.trig = true;
+      if(t.t==='msg') showTaunt(t.m);
+      if(t.t==='weak') { weakJ = true; weakJT = t.d; popup(P.x, P.y-25, "WEAK!", "#ffaa00"); }
+      if(t.t==='inv') { invT = t.d; shake(10); popup(P.x, P.y-25, "INVERTED", "#ff00ff"); }
+      if(t.t==='dark') darkT = t.d;
+      if(t.t==='tiny') { tinyT = t.d; P.w = 12; P.h = 12; }
+      if(t.t==='slip') slipT = t.d;
+      if(t.t==='wind') { windF = t.f; windT = t.d; }
+      if(t.t==='quake') quakeT = t.d;
+    }
+  });
+
+  if(P.y > H+80 || P.y < -120) killPlayer();
+  if(P.x < 0) P.x = 0;
+
+  // Door
+  if(aabb(P.x, P.y, P.w, P.h, L.door.x, L.door.y, L.door.w, L.door.h)) {
+    if(currLvl < lvls.length - 1) {
+      state = 'comp';
+      $('completeTaunt').textContent = compTaunts[Math.floor(Math.random()*compTaunts.length)];
+      $('completeStats').textContent = `Level Deaths: ${lvlDeaths} | Total: ${deaths}`;
+      ui.screens.comp.classList.remove('hidden');
+    } else {
+      state = 'win';
+      $('winMessage').textContent = deaths<15 ? "OK YOU'RE CRACKED 😤" : "YOU DID IT (finally) 😒";
+      $('winDeaths').textContent = `Total Deaths: ${deaths}`;
+      ui.screens.win.classList.remove('hidden');
+    }
+  }
+
+  // Camera
+  camX += ((P.x - W * 0.35) - camX) * 0.1;
+  camX = Math.max(0, Math.min(L.len - W, camX));
+
+  ui.prog.style.width = `${Math.min(P.x/L.len*100, 100)}%`;
+
+  // Squash/Stretch & Trail
+  P.sq += (1-P.sq)*0.15; P.st += (1-P.st)*0.15;
+  if(frame%2===0) { P.trail.push({x:P.x+P.w/2, y:P.y+P.h/2, l:10}); if(P.trail.length>12) P.trail.shift(); }
+  P.trail.forEach(t => t.l--); P.trail = P.trail.filter(t => t.l>0);
+
+  // Particles
+  particles.forEach(p => { p.x+=p.vx; p.y+=p.vy; p.vy+=0.15; p.life--; });
+  particles = particles.filter(p => p.life>0);
+  popups.forEach(p => { p.y+=p.vy; p.life--; });
+  popups = popups.filter(p => p.life>0);
+  
+  if(shakeT>0) shakeT--;
+  if(deathAnimT>0) deathAnimT--;
+}
+
+function render() {
+  if(!lvls[currLvl]) return;
+  const L = lvls[currLvl];
+  
+  ctx.clearRect(0, 0, W, H);
+  let sx = 0, sy = 0;
+  if(shakeT>0) { sx = (Math.random()-0.5)*shakeT; sy = (Math.random()-0.5)*shakeT; }
+  
+  ctx.save(); ctx.translate(sx, sy);
+
+  // BG
+  const grad = ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0, L.bg); grad.addColorStop(1, '#000');
+  ctx.fillStyle = grad; ctx.fillRect(0,0,W,H);
+
+  // Grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.02)'; ctx.lineWidth = 1;
+  const gs = 50, ox = -camX % gs;
+  for(let x=ox; x<W; x+=gs) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for(let y=0; y<H; y+=gs) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+  // Parallax Stars
+  ctx.fillStyle = 'rgba(255,255,255,0.04)';
+  for(let i=0; i<20; i++) ctx.fillRect(((i*137+frame*0.3)%W+W)%W, ((i*89+frame*0.2)%H+H)%H, 2, 2);
+
+  ctx.save(); ctx.translate(-camX, 0);
+
+  // Gravity Zones
+  L.gravs.forEach(g => {
+    const gr = ctx.createLinearGradient(g.x,0,g.x+g.w,0);
+    gr.addColorStop(0,'rgba(170,68,255,0)'); gr.addColorStop(0.5,'rgba(170,68,255,0.15)'); gr.addColorStop(1,'rgba(170,68,255,0)');
+    ctx.fillStyle = gr; ctx.fillRect(g.x, g.y, g.w, g.h);
+    ctx.fillStyle = 'rgba(170,68,255,0.3)';
+    for(let ay=0; ay<g.h; ay+=40) {
+      const off = ((Date.now()/400)*30+ay)%g.h;
+      ctx.save(); ctx.translate(g.x+g.w/2, g.y+off); ctx.beginPath();
+      if(flipG) { ctx.moveTo(0,8); ctx.lineTo(5,-3); ctx.lineTo(-5,-3); } else { ctx.moveTo(0,-8); ctx.lineTo(5,3); ctx.lineTo(-5,3); }
+      ctx.fill(); ctx.restore();
+    }
+  });
+
+  // Plats
+  L.plats.forEach(p => {
+    if(p.gone) {
+      ctx.strokeStyle = 'rgba(255,170,0,0.15)'; ctx.setLineDash([3,4]); ctx.strokeRect(p.x, p.y, p.w, p.h); ctx.setLineDash([]); return;
+    }
+    if(p.t==='fake' && !p.rev) {
+      ctx.fillStyle = L.gnd; ctx.fillRect(p.x, p.y, p.w, p.h);
+      ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fillRect(p.x, p.y, p.w, 2);
+      ctx.fillStyle = 'rgba(255,0,0,0.02)'; ctx.fillRect(p.x, p.y, p.w, p.h);
+      return;
+    }
+    if(p.t==='fake' && p.rev) {
+      ctx.strokeStyle = 'rgba(255,0,0,0.3)'; ctx.setLineDash([3,5]); ctx.strokeRect(p.x, p.y, p.w, p.h); ctx.setLineDash([]); return;
+    }
+    if(p.t==='dis' && p.touched && p.timer>0) {
+      ctx.fillStyle = Math.sin(p.timer*0.45)>0 ? '#ff6600' : L.gnd;
+      ctx.globalAlpha = 0.5 + (p.timer/p.d)*0.5;
+    } else { ctx.fillStyle = L.gnd; ctx.globalAlpha = 1; }
+    
+    ctx.fillRect(p.x+p.shx, p.y, p.w, p.h); ctx.globalAlpha = 1;
+    ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fillRect(p.x+p.shx, p.y, p.w, 2);
+    ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(p.x+p.shx, p.y+p.h-3, p.w, 3);
+  });
+
+  // Spikes
+  ctx.fillStyle = '#ff2244'; ctx.shadowColor = '#ff0000'; ctx.shadowBlur = 10;
+  L.spks.forEach(s => {
+    const sw = s.w / Math.max(1, Math.floor(s.w/10));
+    for(let i=0; i<s.w/sw; i++) {
+      ctx.beginPath(); ctx.moveTo(s.x+i*sw, s.y+s.h); ctx.lineTo(s.x+i*sw+sw/2, s.y); ctx.lineTo(s.x+(i+1)*sw, s.y+s.h); ctx.fill();
+    }
+  });
+  ctx.shadowBlur = 0;
+
+  // Moving Spikes
+  L.mspks.forEach(s => {
+    ctx.strokeStyle = 'rgba(255,68,102,0.1)'; ctx.beginPath(); ctx.moveTo(s.sx+11, s.y+11); ctx.lineTo(s.ex+11, s.y+11); ctx.stroke();
+    ctx.fillStyle = '#ff4466'; ctx.shadowColor = '#ff0044'; ctx.shadowBlur = 12;
+    ctx.save(); ctx.translate(s.x+11, s.y+11); ctx.rotate(Date.now()/120);
+    for(let i=0; i<4; i++) { ctx.rotate(Math.PI/2); ctx.beginPath(); ctx.moveTo(0,-12); ctx.lineTo(4,0); ctx.lineTo(-4,0); ctx.fill(); }
+    ctx.fillStyle = '#ff8899'; ctx.beginPath(); ctx.arc(0,0,3,0,Math.PI*2); ctx.fill();
+    ctx.restore(); ctx.shadowBlur = 0;
+  });
+
+  // Ceilings
+  L.ceils.forEach(c => {
+    if(c.cy<-25 && !c.trig) return;
+    ctx.fillStyle = c.trig ? '#dd4400' : '#885522';
+    ctx.shadowColor = '#ff6600'; ctx.shadowBlur = c.trig ? 20 : 5;
+    ctx.fillRect(c.x, c.cy, c.w, c.h); ctx.shadowBlur = 0;
+    if(!c.trig && Math.abs((P.x+P.w/2)-(c.x+c.w/2))<140) {
+      ctx.fillStyle = `rgba(255,100,0,0.1)`; ctx.fillRect(c.x-5, 0, c.w+10, H);
+    }
+  });
+
+  // Pads
+  L.pads.forEach(b => {
+    const pls = Math.sin(Date.now()/150)*3;
+    ctx.fillStyle = '#00ffaa'; ctx.shadowColor = '#00ffaa'; ctx.shadowBlur = 10+pls;
+    ctx.fillRect(b.x, b.y-pls/2, b.w, b.h+pls);
+    ctx.fillStyle = '#00cc88'; ctx.fillRect(b.x+1, b.y-pls/2+1, b.w-2, 2); ctx.shadowBlur = 0;
+  });
+
+  // Door
+  const d = L.door, dp = Math.sin(Date.now()/200)*4;
+  ctx.shadowColor = '#00ff00'; ctx.shadowBlur = 20+dp;
+  ctx.fillStyle = '#44ff44'; ctx.fillRect(d.x-3, d.y-3, d.w+6, d.h+6); ctx.shadowBlur = 0;
+  ctx.fillStyle = '#002200'; ctx.fillRect(d.x+3, d.y+3, d.w-6, d.h-6);
+  ctx.fillStyle = '#33cc33'; ctx.fillRect(d.x+7, d.y+7, d.w-14, d.h-14);
+
+  // Player Trail
+  P.trail.forEach(t => {
+    const a = t.l/10; ctx.fillStyle = `rgba(68,170,255,${a*0.3})`;
+    ctx.beginPath(); ctx.arc(t.x, t.y, 2.5*a, 0, Math.PI*2); ctx.fill();
+  });
+
+  // Player
+  if(P.alive) {
+    ctx.save(); ctx.translate(P.x+P.w/2, P.y+P.h/2);
+    if(flipG) ctx.scale(1,-1); ctx.scale(P.sq, P.st);
+    ctx.shadowColor = '#00aaff'; ctx.shadowBlur = 15; ctx.fillStyle = '#00aaff';
+    ctx.fillRect(-P.w/2, -P.h/2, P.w, P.h); ctx.shadowBlur = 0;
+    ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.fillRect(-P.w/2+2, -P.h/2+2, P.w-4, P.h*0.5);
+    
+    // Face
+    ctx.fillStyle = '#000'; const ey = -2, px = P.face;
+    ctx.fillRect(-6, ey, 4, 4); ctx.fillRect(3, ey, 4, 4);
+    ctx.fillStyle = '#fff'; ctx.fillRect(-5+px, ey+1, 2, 2); ctx.fillRect(4+px, ey+1, 2, 2);
+    ctx.fillStyle = '#000';
+    if(weakJ) { ctx.beginPath(); ctx.moveTo(-4,7); ctx.quadraticCurveTo(0,4,4,7); ctx.lineWidth=1.5; ctx.strokeStyle='#000'; ctx.stroke(); }
+    else if(invT>0) { ctx.fillRect(-3,6,7,2); }
+    else if(darkT>0) { ctx.beginPath(); ctx.arc(0,7,3,0,Math.PI*2); ctx.fill(); }
+    else if(Math.abs(P.vy)>6) { ctx.beginPath(); ctx.ellipse(0,7,3,4,0,0,Math.PI*2); ctx.fill(); }
+    else { ctx.fillRect(-3,6,7,2); }
+    ctx.restore();
+  }
+
+  // Death Ghost
+  if(!P.alive && deathAnimT>0) {
+    ctx.globalAlpha = deathAnimT/25; ctx.fillStyle = '#ff0040'; ctx.font = '20px "Press Start 2P", monospace'; ctx.textAlign = 'center';
+    ctx.fillText('💀', lastDeathX+12, P.y-deathAnimT*2); ctx.globalAlpha = 1;
+  }
+
+  // Particles & Popups
+  particles.forEach(p => { ctx.globalAlpha = Math.min(p.life/30,1); ctx.fillStyle = p.c; ctx.fillRect(p.x-p.sz/2, p.y-p.sz/2, p.sz, p.sz); }); ctx.globalAlpha = 1;
+  popups.forEach(p => { ctx.globalAlpha = p.life/p.max; ctx.fillStyle = p.col; ctx.font = 'bold 10px "Press Start 2P", monospace'; ctx.textAlign = 'center'; ctx.fillText(p.txt, p.x, p.y); }); ctx.globalAlpha = 1;
+
+  // Wind
+  if(windF) {
+    ctx.strokeStyle = 'rgba(200,200,255,0.1)'; ctx.lineWidth = 1;
+    for(let i=0; i<20; i++) { ctx.beginPath(); const wx = camX+(frame*3+i*50)%W, wy = (i*73)%H; ctx.moveTo(wx, wy); ctx.lineTo(wx+Math.sign(windF)*(15+Math.random()*25), wy); ctx.stroke(); }
+  }
+
+  ctx.restore(); // Cam
+
+  // Dark Mode
+  if(darkT>0) {
+    ctx.fillStyle = 'rgba(0,0,0,0.95)'; ctx.fillRect(0,0,W,H);
+    if(P.alive) {
+      const px = P.x+P.w/2-camX, py = P.y+P.h/2;
+      ctx.save(); ctx.globalCompositeOperation = 'destination-out';
+      const rg = ctx.createRadialGradient(px, py, 0, px, py, 65);
+      rg.addColorStop(0, 'rgba(0,0,0,1)'); rg.addColorStop(0.5, 'rgba(0,0,0,0.9)'); rg.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(px, py, 65, 0, Math.PI*2); ctx.fill(); ctx.restore();
+    }
+  }
+
+  if(flipG) { ctx.fillStyle = 'rgba(170,68,255,0.3)'; ctx.font = 'bold 9px "Press Start 2P", monospace'; ctx.textAlign = 'center'; ctx.fillText('⬆ GRAVITY FLIPPED ⬆', W/2, 18); }
+  
+  ctx.restore(); // Shake
+}
+
+function loop() { update(); render(); requestAnimationFrame(loop); }
+
+$('startBtn').onclick = () => {
+  ui.screens.start.classList.add('hidden'); buildLvls(); loadLvl(0); state = 'play'; deaths = 0; ui.death.textContent = '☠ 0'; showTaunt("GOOD LUCK 😈");
+};
+$('retryBtn').onclick = () => { ui.screens.dead.classList.add('hidden'); loadLvl(currLvl); state = 'play'; };
+$('nextBtn').onclick = () => { ui.screens.comp.classList.add('hidden'); currLvl++; loadLvl(currLvl); state = 'play'; };
+$('restartBtn').onclick = () => { ui.screens.win.classList.add('hidden'); buildLvls(); loadLvl(0); state = 'play'; deaths = 0; ui.death.textContent = '☠ 0'; };
+
+loop();
+  </script>
+</body>
+
+</html>
