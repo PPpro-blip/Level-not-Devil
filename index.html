@@ -199,6 +199,51 @@ p {
   30%, 50%, 70% { transform: translate3d(-5px, 4px, 0); }
   40%, 60% { transform: translate3d(5px, -4px, 0); }
 }
+
+#trollOverlay {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.95);
+  z-index: 100;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+  animation: trollShake 0.1s infinite;
+}
+
+#trollOverlay.active { display: flex; }
+
+#trollMsg {
+  font-size: 26px;
+  color: #ff0040;
+  text-shadow: 0 0 20px #ff0040, 4px 4px 0 #000;
+  animation: trollFlash 0.15s infinite alternate;
+  max-width: 90%;
+  line-height: 1.4;
+  letter-spacing: 2px;
+}
+
+#trollSub {
+  font-size: 12px;
+  color: #ffaa00;
+  margin-top: 20px;
+  animation: pulse 0.5s infinite alternate;
+}
+
+@keyframes trollShake {
+  0%,100% { transform: translate(0,0); }
+  25% { transform: translate(-3px, 2px); }
+  50% { transform: translate(3px, -2px); }
+  75% { transform: translate(-2px, -3px); }
+}
+
+@keyframes trollFlash {
+  from { color: #ff0040; }
+  to { color: #ffaa00; }
+}
+
 </style>
 </head>
 <body>
@@ -226,11 +271,16 @@ p {
     <button class="btn" id="startBtn">PLAY (BAD IDEA)</button>
   </div>
 
+  <div id="trollOverlay">
+  <div id="trollMsg">DON'T TRUST ANYTHING</div>
+  <div id="trollSub">not even your keyboard 💀</div>
+</div>
+  
   <div id="deathScreen" class="screen hidden">
     <h2>YOU DIED</h2>
     <div id="deathTaunt"></div>
     <p id="deathStats"></p>
-    <button class="btn" id="retryBtn">RETRY (SPACE)</button>
+    <button class="btn" id="retryBtn">CLICK TO RETRY</button>
   </div>
 
   <div id="completeScreen" class="screen hidden">
@@ -249,7 +299,90 @@ p {
 </div>
 
 <script>
-const canvas = document.getElementById('gameCanvas');
+// MEME SOUND ENGINE (Web Audio API - no downloads needed)
+let ac = null;
+function initAudio() { if(!ac) ac = new (window.AudioContext||window.webkitAudioContext)(); }
+
+function vineBoom() {
+  initAudio();
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = 'sine';
+  o.frequency.setValueAtTime(180, ac.currentTime);
+  o.frequency.exponentialRampToValueAtTime(20, ac.currentTime + 0.6);
+  g.gain.setValueAtTime(0.6, ac.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.7);
+  o.connect(g); g.connect(ac.destination);
+  o.start(); o.stop(ac.currentTime + 0.7);
+}
+
+function airhorn(delay=0) {
+  setTimeout(() => {
+    initAudio();
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(440, ac.currentTime);
+    o.frequency.linearRampToValueAtTime(660, ac.currentTime + 0.3);
+    g.gain.setValueAtTime(0.25, ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.4);
+    o.connect(g); g.connect(ac.destination);
+    o.start(); o.stop(ac.currentTime + 0.4);
+  }, delay);
+}
+
+function errorBeep(delay=0) {
+  setTimeout(() => {
+    initAudio();
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = 'square';
+    o.frequency.value = 800;
+    g.gain.setValueAtTime(0.2, ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.12);
+    o.connect(g); g.connect(ac.destination);
+    o.start(); o.stop(ac.currentTime + 0.12);
+  }, delay);
+}
+
+function sadTrombone(delay=0) {
+  setTimeout(() => {
+    initAudio();
+    [440, 380, 320, 220].forEach((f, i) => {
+      setTimeout(() => {
+        const o = ac.createOscillator(), g = ac.createGain();
+        o.type = 'sawtooth';
+        o.frequency.value = f;
+        g.gain.setValueAtTime(0.18, ac.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.35);
+        o.connect(g); g.connect(ac.destination);
+        o.start(); o.stop(ac.currentTime + 0.35);
+      }, i * 180);
+    });
+  }, delay);
+}
+
+function chaosSounds() {
+  vineBoom();
+  airhorn(150);
+  errorBeep(300);
+  errorBeep(450);
+  errorBeep(600);
+  sadTrombone(800);
+  airhorn(1500);
+  vineBoom(2000);
+}
+
+// Troll state
+let trollActive = false;
+const trollMessages = [
+  { m: "DON'T TRUST ANYTHING", s: "not even your keyboard 💀" },
+  { m: "WRONG BUTTON LOSER", s: "read the button next time 😂" },
+  { m: "SPACE? REALLY?", s: "that's your best move? 🤡" },
+  { m: "GOTCHA! 😈", s: "you fell for the oldest trick" },
+  { m: "IMAGINE TRUSTING SPACEBAR", s: "in a TROLL game LMAO" },
+  { m: "SKILL ISSUE + KEYBOARD ISSUE", s: "double L moment" },
+  { m: "THE BUTTON SAYS 'CLICK ME'", s: "not 'press space' 🙄" },
+  { m: "BRO PRESSED SPACE 💀", s: "the audacity fr" }
+];
+  const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const W = 800, H = 500;
 
@@ -286,11 +419,26 @@ window.addEventListener('keydown', e => {
   keys[e.code] = true;
   if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
   
-  if (e.code === 'KeyR' && state === 'play') killPlayer();
   if ((e.code === 'Space' || e.code === 'Enter') && state === 'dead') {
-    ui.screens.dead.classList.add('hidden');
-    loadLvl(currLvl);
-  }
+    // TROLL: 40% chance OR every 3rd death
+    if (!trollActive && (Math.random() < 0.4 || lvlDeaths % 3 === 0)) {
+      trollActive = true;
+      const t = trollMessages[Math.floor(Math.random() * trollMessages.length)];
+      document.getElementById('trollMsg').textContent = t.m;
+      document.getElementById('trollSub').textContent = t.s;
+      document.getElementById('trollOverlay').classList.add('active');
+      chaosSounds();
+      
+      // Auto-close after 2.5s, force them to click button
+      setTimeout(() => {
+        document.getElementById('trollOverlay').classList.remove('active');
+        trollActive = false;
+      }, 2500);
+    } else {
+      ui.screens.dead.classList.add('hidden');
+      loadLvl(currLvl);
+    }
+}
   if ((e.code === 'Space' || e.code === 'Enter') && state === 'comp') {
     ui.screens.comp.classList.add('hidden');
     loadLvl(currLvl + 1);
