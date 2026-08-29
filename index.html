@@ -132,13 +132,13 @@ window.addEventListener('keydown', e => {
     }
   }
 
-  // FIX: Proper next level transition
+  // Next level transition
   if ((e.code === 'Space' || e.code === 'Enter') && state === 'comp') {
     ui.screens.comp.classList.add('hidden');
     currLvl++;
     loadLvl(currLvl);
     state = 'play';
-    keys['Space'] = false; // Prevent auto jump
+    keys['Space'] = false;
   }
 });
 window.addEventListener('keyup', e => keys[e.code] = false);
@@ -194,13 +194,72 @@ function buildLvls() {
     trolls: [{x:80, t:'msg', m:"dodge THIS 💀"}, {x:310, t:'wind', d:150, f:1.5}, {x:690, t:'msg', m:"spikes go brrr 📌"}, {x:1060, t:'weak', d:95}, {x:1480, t:'dark', d:95}]
   });
 
-  // 5. TRUST NOTHING
-  lvls.push({ name: "TRUST NOTHING 🤥", bg: "#001100", gnd: "#003a00", start: {x:30, y:390}, len: 2400, door: {x:2280, y:378, w:42, h:62},
-    plats: [{x:0, y:440, w:80, h:60, t:'solid'}, {x:140, y:440, w:60, h:60, t:'fake'}, {x:140, y:370, w:60, h:20, t:'solid'}, {x:260, y:440, w:100, h:60, t:'solid'}, {x:400, y:440, w:200, h:60, t:'fake'}, {x:400, y:320, w:50, h:20, t:'solid'}, {x:500, y:280, w:50, h:20, t:'solid'}, {x:600, y:350, w:50, h:20, t:'solid'}, {x:680, y:440, w:80, h:60, t:'solid'}, {x:820, y:440, w:60, h:60, t:'fake'}, {x:820, y:380, w:60, h:20, t:'solid'}, {x:940, y:440, w:60, h:60, t:'solid'}, {x:1060, y:440, w:60, h:60, t:'fake'}, {x:1180, y:440, w:100, h:60, t:'solid'}, {x:1340, y:440, w:120, h:60, t:'fake'}, {x:1340, y:390, w:120, h:20, t:'dis', d:30}, {x:1520, y:400, w:40, h:20, t:'solid'}, {x:1620, y:360, w:40, h:20, t:'solid'}, {x:1720, y:440, w:200, h:60, t:'fake'}, {x:1720, y:320, w:60, h:20, t:'solid'}, {x:1840, y:380, w:60, h:20, t:'solid'}, {x:1960, y:440, w:100, h:60, t:'solid'}, {x:2120, y:440, w:300, h:60, t:'solid'}, {x:2120, y:380, w:80, h:20, t:'fake'}],
-    spks: [{x:140, y:418, w:60, h:22}, {x:400, y:418, w:200, h:22}, {x:820, y:418, w:60, h:22}, {x:1060, y:418, w:60, h:22}, {x:1340, y:418, w:120, h:22}, {x:1720, y:418, w:200, h:22}],
-    mspks: [{x:420, y:200, w:22, h:22, sx:380, ex:620, s:4, dir:1}, {x:880, y:280, w:22, h:22, sx:800, ex:1000, s:3.5, dir:1}, {x:1560, y:260, w:22, h:22, sx:1480, ex:1660, s:5, dir:-1}],
-    ceils: [{x:280, y:-20, w:60, h:22}, {x:1180, y:-20, w:80, h:22}, {x:1980, y:-20, w:60, h:22}], gravs: [], pads: [{x:690, y:430, w:30, h:10, f:-15}],
-    trolls: [{x:60, t:'msg', m:"trust nothing. literally nothing."}, {x:200, t:'inv', d:85}, {x:360, t:'msg', m:"big platform = safe? 😂"}, {x:750, t:'dark', d:150}, {x:1250, t:'tiny', d:180}, {x:1252, t:'slip', d:180}, {x:1800, t:'weak', d:85}, {x:2050, t:'msg', m:"don't trust the door step 🚪"}]
+  // 5. TRUST NOTHING (RE-BALANCED & 100% BEATABLE)
+  lvls.push({ name: "TRUST NOTHING 🤥", bg: "#001100", gnd: "#003a00", start: {x:30, y:390}, len: 2200, door: {x:2050, y:378, w:42, h:62},
+    plats: [
+      {x:0, y:440, w:100, h:60, t:'solid'},
+      
+      // Choice 1: Bottom is fake over spikes, top is real (60px jump - easy)
+      {x:140, y:440, w:100, h:60, t:'fake'}, 
+      {x:150, y:370, w:60, h:20, t:'solid'}, 
+      {x:250, y:440, w:80, h:60, t:'solid'},
+      
+      // Stepping stones over giant fake floor pit (max 60px height steps)
+      {x:370, y:440, w:220, h:60, t:'fake'}, 
+      {x:370, y:380, w:45, h:20, t:'solid'}, 
+      {x:450, y:340, w:45, h:20, t:'solid'},
+      {x:530, y:380, w:45, h:20, t:'solid'},
+      {x:630, y:440, w:100, h:60, t:'solid'},
+      
+      // Darkness Section
+      {x:770, y:440, w:80, h:60, t:'fake'},
+      {x:770, y:380, w:60, h:20, t:'solid'},
+      {x:870, y:440, w:100, h:60, t:'solid'},
+      {x:1010, y:440, w:80, h:60, t:'fake'},
+      {x:1010, y:380, w:50, h:20, t:'solid'},
+      {x:1130, y:440, w:100, h:60, t:'solid'},
+      
+      // Tiny + Ice + Disappearing (45 frame delay - plenty of time)
+      {x:1270, y:440, w:100, h:60, t:'dis', d:45}, 
+      {x:1470, y:440, w:100, h:60, t:'solid'},
+      
+      // Final Stretch
+      {x:1610, y:440, w:100, h:60, t:'solid'},
+      {x:1750, y:440, w:180, h:60, t:'fake'}, 
+      {x:1750, y:370, w:60, h:20, t:'solid'},
+      {x:1850, y:370, w:60, h:20, t:'solid'},
+      {x:1950, y:440, w:200, h:60, t:'solid'},
+      {x:2010, y:390, w:30, h:50, t:'fake'} // Fake block barrier in front of door
+    ],
+    spks: [
+      {x:140, y:418, w:100, h:22},
+      {x:370, y:418, w:220, h:22},
+      {x:770, y:418, w:80, h:22},
+      {x:1010, y:418, w:80, h:22},
+      {x:1370, y:418, w:80, h:22},
+      {x:1750, y:418, w:180, h:22}
+    ],
+    mspks: [
+      {x:460, y:280, w:22, h:22, sx:400, ex:550, s:3, dir:1},
+      {x:890, y:280, w:22, h:22, sx:870, ex:970, s:3.5, dir:1}
+    ],
+    ceils: [
+      {x:260, y:-20, w:60, h:22},
+      {x:1130, y:-20, w:80, h:22}
+    ],
+    gravs: [],
+    pads: [],
+    trolls: [
+      {x:50, t:'msg', m:"trust nothing. literally nothing."},
+      {x:250, t:'inv', d:85},
+      {x:252, t:'msg', m:"INVERTED 🔄"},
+      {x:360, t:'msg', m:"big floor = trap 😂"},
+      {x:650, t:'dark', d:140},
+      {x:1250, t:'tiny', d:150},
+      {x:1252, t:'slip', d:150},
+      {x:1254, t:'msg', m:"TINY + ICE 🧊🐜"},
+      {x:1960, t:'msg', m:"don't fear the barrier 🚪"}
+    ]
   });
 
   // 6. THE GAUNTLET
@@ -279,16 +338,16 @@ function buildLvls() {
   });
 
   // 15. MYTHPAT'S NIGHTMARE (THE GRAND FINALE)
-  lvls.push({ name: "MYTHPAT'S NIGHTMARE 🤡", bg: "#330000", gnd: "#000", start: {x:50, y:390}, len: 3000, door: {x:280, y:120, w:42, h:62}, // TRUE DOOR IS HIDDEN BACKWARDS/UP
+  lvls.push({ name: "MYTHPAT'S NIGHTMARE 🤡", bg: "#330000", gnd: "#000", start: {x:50, y:390}, len: 3000, door: {x:280, y:120, w:42, h:62},
     plats: [
-      {x:0, y:440, w:3000, h:60, t:'solid'}, // A seemingly massive, flat, safe run
-      {x:2500, y:440, w:300, h:60, t:'fake'}, // Trap at the very end where the fake door is
-      {x:0, y:180, w:100, h:20, t:'solid'}, // Hidden platform above spawn
-      {x:150, y:120, w:50, h:20, t:'solid'}, // Hidden step 2
-      {x:250, y:180, w:100, h:20, t:'solid'} // Hidden door platform
+      {x:0, y:440, w:3000, h:60, t:'solid'},
+      {x:2500, y:440, w:300, h:60, t:'fake'},
+      {x:0, y:180, w:100, h:20, t:'solid'},
+      {x:150, y:120, w:50, h:20, t:'solid'},
+      {x:250, y:180, w:100, h:20, t:'solid'}
     ],
-    spks: [{x:2500, y:480, w:300, h:20}], // Pit of spikes if he falls for the fake door
-    mspks: [], ceils: [], gravs: [], pads: [{x:100, y:430, w:30, h:10, f:-16}], // Bounce pad at start to get up
+    spks: [{x:2500, y:480, w:300, h:20}],
+    mspks: [], ceils: [], gravs: [], pads: [{x:100, y:430, w:30, h:10, f:-16}],
     trolls: [
       {x:300, t:'msg', m:"Mythpat? More like Miss-pat 😂"},
       {x:600, t:'msg', m:"A straight line? Too easy?"},
@@ -298,8 +357,7 @@ function buildLvls() {
       {x:1800, t:'msg', m:"Almost at the door..."},
       {x:2100, t:'msg', m:"I made this specifically to watch you suffer"},
       {x:2400, t:'msg', m:"Oh wait, the door is FAKE 😂"},
-      {x:2600, t:'msg', m:"THE REAL DOOR IS AT THE START BRO"},
-      // Fake door rendering handled in custom render block below
+      {x:2600, t:'msg', m:"THE REAL DOOR IS AT THE START BRO"}
     ]
   });
 }
@@ -308,7 +366,7 @@ function initPlat(p) { p.gone = false; p.timer = 0; p.touched = false; p.rev = f
 
 function loadLvl(idx) {
   currLvl = idx;
-  if(idx >= lvls.length) { // Beat the game
+  if(idx >= lvls.length) {
     state = 'win';
     $('winMessage').textContent = deaths<50 ? "YOU ARE A GAMING GOD 🏆" : "YOU DID IT (finally) 😒";
     $('winDeaths').textContent = `Total Deaths: ${deaths}`;
