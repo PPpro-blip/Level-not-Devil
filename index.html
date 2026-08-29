@@ -3,254 +3,47 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RAGE RUNNER - DEFINITIVE EDITION</title>
+<title>RAGE RUNNER - Mythpat Edition</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-
 * { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-  background: #050505;
-  color: #fff;
-  font-family: 'Press Start 2P', 'Courier New', monospace;
-  user-select: none;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  overflow: hidden;
-}
-
-/* CRT Scanline & Vignette Effect */
-body::after {
-  content: " ";
-  display: block;
-  position: absolute;
-  top: 0; left: 0; bottom: 0; right: 0;
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-              radial-gradient(circle, rgba(0,0,0,0) 60%, rgba(0,0,0,0.4) 100%);
-  background-size: 100% 4px, 100% 100%;
-  pointer-events: none;
-  z-index: 100;
-}
-
-#gameContainer {
-  position: relative;
-  width: 800px;
-  height: 500px;
-  background: #000;
-  border: 4px solid #ff0040;
-  box-shadow: 0 0 40px rgba(255, 0, 64, 0.4), inset 0 0 40px rgba(255, 0, 64, 0.1);
-  overflow: hidden;
-  z-index: 10;
-}
-
+body { background: #050505; color: #fff; font-family: 'Press Start 2P', 'Courier New', monospace; user-select: none; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
+body::after { content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), radial-gradient(circle, rgba(0,0,0,0) 60%, rgba(0,0,0,0.4) 100%); background-size: 100% 4px, 100% 100%; pointer-events: none; z-index: 100; }
+#gameContainer { position: relative; width: 800px; height: 500px; background: #000; border: 4px solid #ff0040; box-shadow: 0 0 40px rgba(255, 0, 64, 0.4), inset 0 0 40px rgba(255, 0, 64, 0.1); overflow: hidden; z-index: 10; }
 canvas { display: block; }
-
-.ui-layer {
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  pointer-events: none;
-  z-index: 20;
-}
-
-#levelDisplay {
-  position: absolute;
-  top: 15px; left: 15px;
-  font-size: 12px;
-  color: #00ff66;
-  text-shadow: 0 0 10px #00ff66;
-}
-
-#deathCounter {
-  position: absolute;
-  top: 15px; right: 15px;
-  font-size: 12px;
-  color: #ff0040;
-  text-shadow: 0 0 10px #ff0040;
-}
-
-#effectBar {
-  position: absolute;
-  top: 35px; left: 15px;
-  display: flex;
-  gap: 8px;
-}
-
-.badge {
-  background: rgba(255, 170, 0, 0.15);
-  border: 1px solid #ffaa00;
-  color: #ffaa00;
-  font-size: 8px;
-  padding: 4px 6px;
-  border-radius: 2px;
-  text-shadow: 0 0 5px #ffaa00;
-  animation: pulse 1s infinite alternate;
-}
-
+.ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 20; }
+#levelDisplay { position: absolute; top: 15px; left: 15px; font-size: 12px; color: #00ff66; text-shadow: 0 0 10px #00ff66; }
+#deathCounter { position: absolute; top: 15px; right: 15px; font-size: 12px; color: #ff0040; text-shadow: 0 0 10px #ff0040; }
+#effectBar { position: absolute; top: 35px; left: 15px; display: flex; gap: 8px; flex-wrap: wrap; max-width: 60%; }
+.badge { background: rgba(255, 170, 0, 0.15); border: 1px solid #ffaa00; color: #ffaa00; font-size: 8px; padding: 4px 6px; border-radius: 2px; text-shadow: 0 0 5px #ffaa00; animation: pulse 1s infinite alternate; }
 @keyframes pulse { from { opacity: 0.7; } to { opacity: 1; } }
-
-#tauntText {
-  position: absolute;
-  top: 40%; left: 50%;
-  transform: translate(-50%, -50%) scale(0.8);
-  font-size: 24px;
-  color: #ff0040;
-  text-shadow: 0 0 20px #ff0040, 4px 4px 0 #330011;
-  opacity: 0;
-  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  white-space: nowrap;
-  text-align: center;
-  letter-spacing: 1px;
-}
-
-#tauntText.active {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
-}
-
-#progressBar {
-  position: absolute;
-  bottom: 0; left: 0; width: 100%; height: 5px;
-  background: rgba(255, 255, 255, 0.1);
-}
-
-#progressFill {
-  height: 100%; width: 0%;
-  background: linear-gradient(90deg, #ff0040, #ffaa00, #00ff66);
-  transition: width 0.1s linear;
-  box-shadow: 0 0 10px rgba(255, 0, 64, 0.5);
-}
-
-/* UI Screens */
-.screen {
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0, 0, 0, 0.92);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 30;
-  pointer-events: all;
-  text-align: center;
-}
-
+#tauntText { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) scale(0.8); font-size: 20px; color: #ff0040; text-shadow: 0 0 20px #ff0040, 4px 4px 0 #330011; opacity: 0; transition: all 0.2s; white-space: nowrap; text-align: center; }
+#tauntText.active { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+#progressBar { position: absolute; bottom: 0; left: 0; width: 100%; height: 5px; background: rgba(255, 255, 255, 0.1); }
+#progressFill { height: 100%; width: 0%; background: linear-gradient(90deg, #ff0040, #ffaa00, #00ff66); transition: width 0.1s linear; }
+.screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.92); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 30; pointer-events: all; text-align: center; }
 .screen.hidden { display: none !important; }
-
-h1 {
-  font-size: 44px;
-  color: #ff0040;
-  text-shadow: 0 0 25px #ff0040, 4px 4px 0 #550011;
-  margin-bottom: 10px;
-}
-
-h2 {
-  font-size: 32px;
-  color: #ff0040;
-  text-shadow: 0 0 15px #ff0040, 3px 3px 0 #440011;
-  margin-bottom: 10px;
-}
-
-p {
-  font-size: 10px;
-  color: #aaa;
-  margin: 6px 0;
-  line-height: 1.5;
-}
-
-.btn {
-  margin-top: 25px;
-  padding: 15px 30px;
-  font-size: 12px;
-  font-family: 'Press Start 2P', monospace;
-  background: transparent;
-  color: #ff0040;
-  border: 2px solid #ff0040;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.btn:hover {
-  background: #ff0040;
-  color: #000;
-  box-shadow: 0 0 25px rgba(255, 0, 64, 0.6);
-  transform: scale(1.05);
-}
-
+h1 { font-size: 44px; color: #ff0040; text-shadow: 0 0 25px #ff0040, 4px 4px 0 #550011; margin-bottom: 10px; }
+h2 { font-size: 32px; color: #ff0040; text-shadow: 0 0 15px #ff0040, 3px 3px 0 #440011; margin-bottom: 10px; }
+p { font-size: 10px; color: #aaa; margin: 6px 0; line-height: 1.5; }
+.btn { margin-top: 25px; padding: 15px 30px; font-size: 12px; font-family: 'Press Start 2P', monospace; background: transparent; color: #ff0040; border: 2px solid #ff0040; cursor: pointer; transition: all 0.15s ease; }
+.btn:hover { background: #ff0040; color: #000; box-shadow: 0 0 25px rgba(255, 0, 64, 0.6); transform: scale(1.05); }
 .btn:active { transform: scale(0.95); }
-
-#deathTaunt {
-  font-size: 14px;
-  color: #ff6666;
-  margin: 15px 0;
-  line-height: 1.4;
-}
-
+#deathTaunt { font-size: 14px; color: #ff6666; margin: 15px 0; line-height: 1.4; max-width: 80%; }
 .death-flash { animation: flash 0.3s ease-out; }
 @keyframes flash { 0% { box-shadow: inset 0 0 150px rgba(255,0,0,0.8); } 100% { box-shadow: inset 0 0 0 transparent; } }
-
-.shake { animation: shake 0.2s cubic-bezier(.36,.07,.19,.97) both; }
-@keyframes shake {
-  10%, 90% { transform: translate3d(-2px, 2px, 0); }
-  20%, 80% { transform: translate3d(3px, -2px, 0); }
-  30%, 50%, 70% { transform: translate3d(-5px, 4px, 0); }
-  40%, 60% { transform: translate3d(5px, -4px, 0); }
-}
-
-#trollOverlay {
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.95);
-  z-index: 100;
-  display: none;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  text-align: center;
-  animation: trollShake 0.1s infinite;
-}
-
+#trollOverlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; display: none; justify-content: center; align-items: center; flex-direction: column; text-align: center; animation: trollShake 0.1s infinite; }
 #trollOverlay.active { display: flex; }
-
-#trollMsg {
-  font-size: 26px;
-  color: #ff0040;
-  text-shadow: 0 0 20px #ff0040, 4px 4px 0 #000;
-  animation: trollFlash 0.15s infinite alternate;
-  max-width: 90%;
-  line-height: 1.4;
-  letter-spacing: 2px;
-}
-
-#trollSub {
-  font-size: 12px;
-  color: #ffaa00;
-  margin-top: 20px;
-  animation: pulse 0.5s infinite alternate;
-}
-
-@keyframes trollShake {
-  0%,100% { transform: translate(0,0); }
-  25% { transform: translate(-3px, 2px); }
-  50% { transform: translate(3px, -2px); }
-  75% { transform: translate(-2px, -3px); }
-}
-
-@keyframes trollFlash {
-  from { color: #ff0040; }
-  to { color: #ffaa00; }
-}
-
+#trollMsg { font-size: 26px; color: #ff0040; text-shadow: 0 0 20px #ff0040, 4px 4px 0 #000; animation: trollFlash 0.15s infinite alternate; max-width: 90%; line-height: 1.4; }
+#trollSub { font-size: 12px; color: #ffaa00; margin-top: 20px; animation: pulse 0.5s infinite alternate; }
+@keyframes trollShake { 0%,100% { transform: translate(0,0); } 25% { transform: translate(-3px, 2px); } 50% { transform: translate(3px, -2px); } 75% { transform: translate(-2px, -3px); } }
+@keyframes trollFlash { from { color: #ff0040; } to { color: #ffaa00; } }
 </style>
 </head>
 <body>
 
 <div id="gameContainer">
   <canvas id="gameCanvas" width="800" height="500"></canvas>
-
   <div class="ui-layer">
     <div id="levelDisplay">LV1 WELCOME TO HELL</div>
     <div id="deathCounter">☠ 0</div>
@@ -261,21 +54,18 @@ p {
 
   <div id="startScreen" class="screen">
     <h1>RAGE RUNNER</h1>
-    <p style="color:#ff6666;">"You're not gonna make it lol"</p>
-    <br>
+    <p style="color:#ff6666;">"You're not gonna make it lol"</p><br>
     <p>A / D or LEFT / RIGHT to Move</p>
-    <p>SPACE or W to Jump</p>
-    <p>Press R for Instant Restart</p>
-    <br>
+    <p>SPACE or W to Jump | R to Restart</p><br>
     <p style="color:#ff0040; animation: pulse 1s infinite;">⚠ THIS GAME IS UNFAIR ⚠</p>
     <button class="btn" id="startBtn">PLAY (BAD IDEA)</button>
   </div>
 
   <div id="trollOverlay">
-  <div id="trollMsg">DON'T TRUST ANYTHING</div>
-  <div id="trollSub">not even your keyboard 💀</div>
-</div>
-  
+    <div id="trollMsg">DON'T TRUST ANYTHING</div>
+    <div id="trollSub">not even your keyboard 💀</div>
+  </div>
+
   <div id="deathScreen" class="screen hidden">
     <h2>YOU DIED</h2>
     <div id="deathTaunt"></div>
@@ -291,374 +81,225 @@ p {
   </div>
 
   <div id="winScreen" class="screen hidden">
-    <h2 style="color:#00ff66; text-shadow:0 0 25px #00ff66;">YOU WON?!</h2>
+    <h2 style="color:#00ff66; text-shadow:0 0 25px #00ff66;">YOU SURVIVED?!</h2>
     <p id="winMessage" style="color:#ffaa00; font-size:14px; margin:15px 0;"></p>
     <p id="winDeaths"></p>
-    <button class="btn" id="restartBtn" style="color:#00ff66; border-color:#00ff66;">PLAY AGAIN?</button>
+    <button class="btn" id="restartBtn" style="color:#00ff66; border-color:#00ff66;">SUFFER AGAIN?</button>
   </div>
 </div>
 
 <script>
-// MEME SOUND ENGINE (Web Audio API - no downloads needed)
+// --- AUDIO ENGINE ---
 let ac = null;
 function initAudio() { if(!ac) ac = new (window.AudioContext||window.webkitAudioContext)(); }
-
-function vineBoom() {
-  initAudio();
-  const o = ac.createOscillator(), g = ac.createGain();
-  o.type = 'sine';
-  o.frequency.setValueAtTime(180, ac.currentTime);
-  o.frequency.exponentialRampToValueAtTime(20, ac.currentTime + 0.6);
-  g.gain.setValueAtTime(0.6, ac.currentTime);
-  g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.7);
-  o.connect(g); g.connect(ac.destination);
-  o.start(); o.stop(ac.currentTime + 0.7);
+function playTone(f, type, vol, dur, delay=0) {
+  setTimeout(() => { if(!ac)return; const o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.setValueAtTime(f, ac.currentTime); g.gain.setValueAtTime(vol, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + dur); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + dur); }, delay);
 }
+function vineBoom(d=0) { setTimeout(()=>{ if(!ac)return; const o=ac.createOscillator(), g=ac.createGain(); o.type='sine'; o.frequency.setValueAtTime(180, ac.currentTime); o.frequency.exponentialRampToValueAtTime(20, ac.currentTime+0.6); g.gain.setValueAtTime(0.6, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+0.7); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+0.7);}, d); }
+function chaosSounds() { vineBoom(0); playTone(440,'sawtooth',0.2,0.4,150); playTone(800,'square',0.2,0.1,300); playTone(800,'square',0.2,0.1,450); playTone(800,'square',0.2,0.1,600); playTone(300,'sawtooth',0.2,0.4,800); vineBoom(1200); }
 
-function airhorn(delay=0) {
-  setTimeout(() => {
-    initAudio();
-    const o = ac.createOscillator(), g = ac.createGain();
-    o.type = 'sawtooth';
-    o.frequency.setValueAtTime(440, ac.currentTime);
-    o.frequency.linearRampToValueAtTime(660, ac.currentTime + 0.3);
-    g.gain.setValueAtTime(0.25, ac.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.4);
-    o.connect(g); g.connect(ac.destination);
-    o.start(); o.stop(ac.currentTime + 0.4);
-  }, delay);
-}
-
-function errorBeep(delay=0) {
-  setTimeout(() => {
-    initAudio();
-    const o = ac.createOscillator(), g = ac.createGain();
-    o.type = 'square';
-    o.frequency.value = 800;
-    g.gain.setValueAtTime(0.2, ac.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.12);
-    o.connect(g); g.connect(ac.destination);
-    o.start(); o.stop(ac.currentTime + 0.12);
-  }, delay);
-}
-
-function sadTrombone(delay=0) {
-  setTimeout(() => {
-    initAudio();
-    [440, 380, 320, 220].forEach((f, i) => {
-      setTimeout(() => {
-        const o = ac.createOscillator(), g = ac.createGain();
-        o.type = 'sawtooth';
-        o.frequency.value = f;
-        g.gain.setValueAtTime(0.18, ac.currentTime);
-        g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.35);
-        o.connect(g); g.connect(ac.destination);
-        o.start(); o.stop(ac.currentTime + 0.35);
-      }, i * 180);
-    });
-  }, delay);
-}
-
-function chaosSounds() {
-  vineBoom();
-  airhorn(150);
-  errorBeep(300);
-  errorBeep(450);
-  errorBeep(600);
-  sadTrombone(800);
-  airhorn(1500);
-  vineBoom(2000);
-}
-
-// Troll state
-let trollActive = false;
-const trollMessages = [
-  { m: "DON'T TRUST ANYTHING", s: "not even your keyboard 💀" },
-  { m: "WRONG BUTTON LOSER", s: "read the button next time 😂" },
-  { m: "SPACE? REALLY?", s: "that's your best move? 🤡" },
-  { m: "GOTCHA! 😈", s: "you fell for the oldest trick" },
-  { m: "IMAGINE TRUSTING SPACEBAR", s: "in a TROLL game LMAO" },
-  { m: "SKILL ISSUE + KEYBOARD ISSUE", s: "double L moment" },
-  { m: "THE BUTTON SAYS 'CLICK ME'", s: "not 'press space' 🙄" },
-  { m: "BRO PRESSED SPACE 💀", s: "the audacity fr" }
-];
-  const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-const W = 800, H = 500;
-
-// UI Elements
+// --- GAME LOGIC ---
+const canvas = document.getElementById('gameCanvas'), ctx = canvas.getContext('2d'), W = 800, H = 500;
 const $ = id => document.getElementById(id);
-const ui = {
-  level: $('levelDisplay'), death: $('deathCounter'), effect: $('effectBar'),
-  taunt: $('tauntText'), prog: $('progressFill'),
-  screens: { start: $('startScreen'), dead: $('deathScreen'), comp: $('completeScreen'), win: $('winScreen') }
-};
+const ui = { level: $('levelDisplay'), death: $('deathCounter'), effect: $('effectBar'), taunt: $('tauntText'), prog: $('progressFill'), screens: { start: $('startScreen'), dead: $('deathScreen'), comp: $('completeScreen'), win: $('winScreen') } };
 
-// Game State
-let state = 'start'; // start, play, dead, comp, win
-let deaths = 0, lvlDeaths = 0, currLvl = 0, frame = 0;
-let camX = 0, shakeT = 0, deathAnimT = 0, lastDeathX = 0;
+let state = 'start', deaths = 0, lvlDeaths = 0, currLvl = 0, frame = 0, camX = 0, shakeT = 0, deathAnimT = 0, lastDeathX = 0;
 let particles = [], popups = [];
-
-// Modifiers
 let flipG = false, weakJ = false, weakJT = 0, invT = 0, darkT = 0, tinyT = 0, slipT = 0, windF = 0, windT = 0, tauntT = 0, quakeT = 0;
-
-// Physics Constants
 const G = 0.52, FRIC = 0.82, MAX_FALL = 13;
+const P = { x: 50, y: 380, w: 24, h: 24, vx: 0, vy: 0, gnd: false, jp: -11, spd: 4.8, alive: true, face: 1, sq: 1, st: 1, trail: [] };
 
-// Player Object
-const P = {
-  x: 50, y: 380, w: 24, h: 24, vx: 0, vy: 0,
-  gnd: false, jp: -11, spd: 4.8, alive: true,
-  face: 1, sq: 1, st: 1, trail: []
-};
-
-// Input
 const keys = {};
 window.addEventListener('keydown', e => {
   keys[e.code] = true;
   if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
+  if (e.code === 'KeyR' && state === 'play') killPlayer();
   
+  // TROLL ON DEAD SCREEN SPACEBAR
   if ((e.code === 'Space' || e.code === 'Enter') && state === 'dead') {
-    // TROLL: 40% chance OR every 3rd death
     if (!trollActive && (Math.random() < 0.4 || lvlDeaths % 3 === 0)) {
       trollActive = true;
-      const t = trollMessages[Math.floor(Math.random() * trollMessages.length)];
-      document.getElementById('trollMsg').textContent = t.m;
-      document.getElementById('trollSub').textContent = t.s;
-      document.getElementById('trollOverlay').classList.add('active');
+      const tm = tMsgs[Math.floor(Math.random() * tMsgs.length)];
+      $('trollMsg').textContent = tm.m; $('trollSub').textContent = tm.s;
+      $('trollOverlay').classList.add('active');
       chaosSounds();
-      
-      // Auto-close after 2.5s, force them to click button
-      setTimeout(() => {
-        document.getElementById('trollOverlay').classList.remove('active');
-        trollActive = false;
-      }, 2500);
+      setTimeout(() => { $('trollOverlay').classList.remove('active'); trollActive = false; }, 2500);
     } else {
       ui.screens.dead.classList.add('hidden');
       loadLvl(currLvl);
+      state = 'play';
+      keys['Space'] = false;
     }
-}
+  }
+
+  // FIX: Proper next level transition
   if ((e.code === 'Space' || e.code === 'Enter') && state === 'comp') {
     ui.screens.comp.classList.add('hidden');
-    loadLvl(currLvl + 1);
+    currLvl++;
+    loadLvl(currLvl);
+    state = 'play';
+    keys['Space'] = false; // Prevent auto jump
   }
 });
 window.addEventListener('keyup', e => keys[e.code] = false);
 
-// Taunts
+let trollActive = false;
+const tMsgs = [
+  { m: "DON'T TRUST ANYTHING", s: "not even your keyboard 💀" }, { m: "WRONG BUTTON LOSER", s: "read the button next time 😂" },
+  { m: "SPACE? REALLY?", s: "that's your best move? 🤡" }, { m: "GOTCHA! 😈", s: "you fell for the oldest trick" },
+  { m: "IMAGINE TRUSTING SPACEBAR", s: "in a TROLL game LMAO" }, { m: "SKILL ISSUE + KEYBOARD ISSUE", s: "double L moment" }
+];
+
 const deadTaunts = [
-  "LOL", "GIT GUD 💀", "skill issue fr fr", "maybe try minecraft?",
-  "LMAOOO GET REKT", "that was embarrassing", "have you tried jumping?",
-  "HAHAHAHA", "pathetic.", "💀💀💀", "uninstall tbh", "first time? 🤡", 
-  "you call that gaming?", "L + ratio", "bruh moment", "WASTED", 
-  "the floor sends its regards", "404: skill not found"
+  "LOL", "GIT GUD 💀", "skill issue fr fr", "LMAOOO GET REKT", "that was embarrassing",
+  "have you tried jumping?", "HAHAHAHA", "pathetic.", "💀💀💀", "uninstall tbh",
+  "bro really died there", "first time? 🤡", "you call that gaming?", "L + ratio",
+  "bruh moment", "WASTED", "Mythpat? More like Miss-pat 😂", "Slayy Point plays better than you",
+  "Where is the mimicry now? 💀", "I made this specifically to watch you suffer"
 ];
 const compTaunts = ["don't celebrate yet 😈", "that was the EASY one", "took you long enough 🙄", "cute attempt. next one's worse 💀"];
 
-// Levels Data
 const lvls = [];
 function buildLvls() {
   lvls.length = 0;
 
-  // LV1
-  lvls.push({
-    name: "WELCOME TO HELL", bg: "#080808", gnd: "#2a2a2a", start: {x:50, y:390}, len: 2000, door: {x:1900, y:378, w:42, h:62},
-    plats: [
-      {x:0, y:440, w:220, h:60, t:'solid'}, {x:220, y:440, w:60, h:60, t:'fake'}, {x:300, y:440, w:170, h:60, t:'solid'},
-      {x:500, y:440, w:40, h:60, t:'solid'}, {x:580, y:440, w:180, h:60, t:'solid'}, {x:760, y:440, w:60, h:60, t:'fake'},
-      {x:840, y:440, w:180, h:60, t:'solid'}, {x:1060, y:440, w:130, h:60, t:'solid'}, {x:1060, y:385, w:80, h:14, t:'dis', d:45},
-      {x:1230, y:440, w:170, h:60, t:'solid'}, {x:1440, y:440, w:210, h:60, t:'solid'}, {x:1440, y:390, w:55, h:14, t:'fake'},
-      {x:1690, y:440, w:310, h:60, t:'solid'}
-    ],
-    spks: [{x:470, y:418, w:30, h:22}, {x:1190, y:418, w:40, h:22}],
-    mspks: [], ceils: [{x:360, y:-20, w:55, h:22}, {x:940, y:-20, w:80, h:22}],
-    gravs: [], pads: [],
-    trolls: [
-      {x:180, t:'msg', m:"this seems easy right? 😏"}, {x:460, t:'weak', d:90}, {x:462, t:'msg', m:"NOODLE LEGS 🦵"},
-      {x:850, t:'msg', m:"watch your step 👀"}, {x:1380, t:'msg', m:"almost there... maybe 🤷"}
-    ]
+  // 1. WELCOME TO HELL
+  lvls.push({ name: "WELCOME TO HELL", bg: "#080808", gnd: "#2a2a2a", start: {x:50, y:390}, len: 2000, door: {x:1900, y:378, w:42, h:62},
+    plats: [{x:0, y:440, w:220, h:60, t:'solid'}, {x:220, y:440, w:60, h:60, t:'fake'}, {x:300, y:440, w:170, h:60, t:'solid'}, {x:500, y:440, w:40, h:60, t:'solid'}, {x:580, y:440, w:180, h:60, t:'solid'}, {x:760, y:440, w:60, h:60, t:'fake'}, {x:840, y:440, w:180, h:60, t:'solid'}, {x:1060, y:440, w:130, h:60, t:'solid'}, {x:1060, y:385, w:80, h:14, t:'dis', d:45}, {x:1230, y:440, w:170, h:60, t:'solid'}, {x:1440, y:440, w:210, h:60, t:'solid'}, {x:1440, y:390, w:55, h:14, t:'fake'}, {x:1690, y:440, w:310, h:60, t:'solid'}],
+    spks: [{x:470, y:418, w:30, h:22}, {x:1190, y:418, w:40, h:22}], mspks: [], ceils: [{x:360, y:-20, w:55, h:22}, {x:940, y:-20, w:80, h:22}], gravs: [], pads: [],
+    trolls: [{x:180, t:'msg', m:"this seems easy right? 😏"}, {x:460, t:'weak', d:90}, {x:462, t:'msg', m:"NOODLE LEGS 🦵"}, {x:850, t:'msg', m:"watch your step 👀"}, {x:1380, t:'msg', m:"almost there... maybe 🤷"}]
   });
 
-  // LV2
-  lvls.push({
-    name: "THE FLOOR IS A LIE", bg: "#110800", gnd: "#3d2200", start: {x:50, y:390}, len: 2200, door: {x:2100, y:378, w:42, h:62},
-    plats: [
-      {x:0, y:440, w:150, h:60, t:'solid'}, {x:190, y:440, w:90, h:60, t:'dis', d:50}, {x:320, y:400, w:90, h:22, t:'dis', d:40},
-      {x:450, y:360, w:90, h:22, t:'dis', d:45}, {x:580, y:440, w:130, h:60, t:'solid'}, {x:750, y:400, w:80, h:22, t:'dis', d:35},
-      {x:870, y:360, w:80, h:22, t:'dis', d:40}, {x:990, y:320, w:80, h:22, t:'dis', d:40}, {x:1110, y:440, w:110, h:60, t:'solid'},
-      {x:1260, y:440, w:90, h:60, t:'dis', d:26}, {x:1390, y:400, w:120, h:22, t:'solid'}, {x:1550, y:440, w:80, h:60, t:'dis', d:35},
-      {x:1670, y:380, w:100, h:22, t:'dis', d:40}, {x:1810, y:440, w:350, h:60, t:'solid'},
-    ],
-    spks: [{x:600, y:418, w:80, h:22}, {x:1120, y:418, w:70, h:22}],
-    mspks: [{x:810, y:440, w:22, h:22, sx:750, ex:940, s:2.5, dir:1}],
-    ceils: [{x:640, y:-20, w:60, h:22}, {x:1420, y:-20, w:100, h:22}],
-    gravs: [], pads: [{x:1400, y:390, w:35, h:10, f:-14}],
-    trolls: [
-      {x:100, t:'msg', m:"don't get comfortable 😈"}, {x:500, t:'weak', d:80}, {x:502, t:'msg', m:"WEAK JUMP ACTIVATED"},
-      {x:800, t:'msg', m:"the floor hates you"}, {x:1230, t:'slip', d:130}, {x:1232, t:'msg', m:"ICE ICE BABY 🧊"},
-      {x:1750, t:'msg', m:"GG... wait nah 😂"}
-    ]
+  // 2. THE FLOOR IS A LIE
+  lvls.push({ name: "THE FLOOR IS A LIE", bg: "#110800", gnd: "#3d2200", start: {x:50, y:390}, len: 2200, door: {x:2100, y:378, w:42, h:62},
+    plats: [{x:0, y:440, w:150, h:60, t:'solid'}, {x:190, y:440, w:90, h:60, t:'dis', d:50}, {x:320, y:400, w:90, h:22, t:'dis', d:40}, {x:450, y:360, w:90, h:22, t:'dis', d:45}, {x:580, y:440, w:130, h:60, t:'solid'}, {x:750, y:400, w:80, h:22, t:'dis', d:35}, {x:870, y:360, w:80, h:22, t:'dis', d:40}, {x:990, y:320, w:80, h:22, t:'dis', d:40}, {x:1110, y:440, w:110, h:60, t:'solid'}, {x:1260, y:440, w:90, h:60, t:'dis', d:26}, {x:1390, y:400, w:120, h:22, t:'solid'}, {x:1550, y:440, w:80, h:60, t:'dis', d:35}, {x:1670, y:380, w:100, h:22, t:'dis', d:40}, {x:1810, y:440, w:350, h:60, t:'solid'}],
+    spks: [{x:600, y:418, w:80, h:22}, {x:1120, y:418, w:70, h:22}], mspks: [{x:810, y:440, w:22, h:22, sx:750, ex:940, s:2.5, dir:1}], ceils: [{x:640, y:-20, w:60, h:22}, {x:1420, y:-20, w:100, h:22}], gravs: [], pads: [{x:1400, y:390, w:35, h:10, f:-14}],
+    trolls: [{x:100, t:'msg', m:"don't get comfortable 😈"}, {x:500, t:'weak', d:80}, {x:800, t:'msg', m:"the floor hates you"}, {x:1230, t:'slip', d:130}, {x:1232, t:'msg', m:"ICE ICE BABY 🧊"}]
   });
 
-  // LV3
-  lvls.push({
-    name: "GRAVITY? LOL", bg: "#080012", gnd: "#220044", start: {x:50, y:390}, len: 2100, door: {x:1980, y:378, w:42, h:62},
-    plats: [
-      {x:0, y:440, w:170, h:60, t:'solid'}, {x:0, y:0, w:170, h:60, t:'solid'}, {x:230, y:440, w:120, h:60, t:'solid'},
-      {x:230, y:0, w:120, h:60, t:'solid'}, {x:440, y:440, w:100, h:60, t:'solid'}, {x:440, y:0, w:100, h:60, t:'solid'},
-      {x:620, y:440, w:120, h:60, t:'solid'}, {x:620, y:0, w:120, h:60, t:'solid'}, {x:800, y:440, w:80, h:60, t:'solid'},
-      {x:800, y:0, w:80, h:60, t:'solid'}, {x:950, y:440, w:170, h:60, t:'solid'}, {x:950, y:0, w:170, h:60, t:'solid'},
-      {x:1190, y:440, w:100, h:60, t:'solid'}, {x:1190, y:0, w:100, h:60, t:'solid'}, {x:1360, y:440, w:210, h:60, t:'solid'},
-      {x:1360, y:0, w:210, h:60, t:'solid'}, {x:1650, y:440, w:80, h:60, t:'dis', d:50}, {x:1650, y:0, w:80, h:60, t:'dis', d:50},
-      {x:1800, y:440, w:250, h:60, t:'solid'}, {x:1800, y:0, w:250, h:60, t:'solid'}
-    ],
-    spks: [{x:380, y:418, w:60, h:22}, {x:380, y:60, w:60, h:22}, {x:1290, y:418, w:70, h:22}, {x:1290, y:60, w:70, h:22}],
-    mspks: [{x:670, y:240, w:22, h:22, sx:620, ex:770, s:3, dir:1}], ceils: [],
-    gravs: [{x:200, y:0, w:30, h:500}, {x:530, y:0, w:30, h:500}, {x:780, y:0, w:25, h:500}, {x:1150, y:0, w:40, h:500}, {x:1610, y:0, w:40, h:500}, {x:1760, y:0, w:40, h:500}],
-    pads: [],
-    trolls: [
-      {x:50, t:'msg', m:"which way is up? 🙃"}, {x:380, t:'msg', m:"FLIP! 🔄"}, {x:730, t:'weak', d:65},
-      {x:732, t:'msg', m:"weak legs in zero-g 💀"}, {x:1100, t:'msg', m:"dizzy yet? 🌀"}, {x:1520, t:'inv', d:110},
-      {x:1522, t:'msg', m:"INVERTED + FLIPPED 🤯"}
-    ]
+  // 3. GRAVITY? LOL
+  lvls.push({ name: "GRAVITY? LOL", bg: "#080012", gnd: "#220044", start: {x:50, y:390}, len: 2100, door: {x:1980, y:378, w:42, h:62},
+    plats: [{x:0, y:440, w:170, h:60, t:'solid'}, {x:0, y:0, w:170, h:60, t:'solid'}, {x:230, y:440, w:120, h:60, t:'solid'}, {x:230, y:0, w:120, h:60, t:'solid'}, {x:440, y:440, w:100, h:60, t:'solid'}, {x:440, y:0, w:100, h:60, t:'solid'}, {x:620, y:440, w:120, h:60, t:'solid'}, {x:620, y:0, w:120, h:60, t:'solid'}, {x:800, y:440, w:80, h:60, t:'solid'}, {x:800, y:0, w:80, h:60, t:'solid'}, {x:950, y:440, w:170, h:60, t:'solid'}, {x:950, y:0, w:170, h:60, t:'solid'}, {x:1190, y:440, w:100, h:60, t:'solid'}, {x:1190, y:0, w:100, h:60, t:'solid'}, {x:1360, y:440, w:210, h:60, t:'solid'}, {x:1360, y:0, w:210, h:60, t:'solid'}, {x:1650, y:440, w:80, h:60, t:'dis', d:50}, {x:1650, y:0, w:80, h:60, t:'dis', d:50}, {x:1800, y:440, w:250, h:60, t:'solid'}, {x:1800, y:0, w:250, h:60, t:'solid'}],
+    spks: [{x:380, y:418, w:60, h:22}, {x:380, y:60, w:60, h:22}, {x:1290, y:418, w:70, h:22}, {x:1290, y:60, w:70, h:22}], mspks: [{x:670, y:240, w:22, h:22, sx:620, ex:770, s:3, dir:1}], ceils: [],
+    gravs: [{x:200, y:0, w:30, h:500}, {x:530, y:0, w:30, h:500}, {x:780, y:0, w:25, h:500}, {x:1150, y:0, w:40, h:500}, {x:1610, y:0, w:40, h:500}, {x:1760, y:0, w:40, h:500}], pads: [],
+    trolls: [{x:50, t:'msg', m:"which way is up? 🙃"}, {x:380, t:'msg', m:"FLIP! 🔄"}, {x:730, t:'weak', d:65}, {x:1100, t:'msg', m:"dizzy yet? 🌀"}, {x:1520, t:'inv', d:110}]
   });
 
-  // LV4
-  lvls.push({
-    name: "SPIKE CITY 📌", bg: "#100000", gnd: "#3a0000", start: {x:30, y:390}, len: 2200, door: {x:2100, y:378, w:42, h:62},
-    plats: [
-      {x:0, y:440, w:120, h:60, t:'solid'}, {x:165, y:395, w:90, h:22, t:'solid'}, {x:300, y:355, w:90, h:22, t:'solid'},
-      {x:440, y:440, w:80, h:60, t:'solid'}, {x:560, y:380, w:75, h:22, t:'solid'}, {x:675, y:440, w:120, h:60, t:'solid'},
-      {x:845, y:395, w:75, h:22, t:'solid'}, {x:965, y:355, w:90, h:22, t:'solid'}, {x:1100, y:440, w:120, h:60, t:'solid'},
-      {x:1265, y:395, w:80, h:22, t:'dis', d:40}, {x:1390, y:355, w:75, h:22, t:'solid'}, {x:1510, y:315, w:75, h:22, t:'dis', d:45},
-      {x:1630, y:440, w:100, h:60, t:'solid'}, {x:1780, y:395, w:90, h:22, t:'solid'}, {x:1920, y:440, w:260, h:60, t:'solid'},
-    ],
+  // 4. SPIKE CITY
+  lvls.push({ name: "SPIKE CITY 📌", bg: "#100000", gnd: "#3a0000", start: {x:30, y:390}, len: 2200, door: {x:2100, y:378, w:42, h:62},
+    plats: [{x:0, y:440, w:120, h:60, t:'solid'}, {x:165, y:395, w:90, h:22, t:'solid'}, {x:300, y:355, w:90, h:22, t:'solid'}, {x:440, y:440, w:80, h:60, t:'solid'}, {x:560, y:380, w:75, h:22, t:'solid'}, {x:675, y:440, w:120, h:60, t:'solid'}, {x:845, y:395, w:75, h:22, t:'solid'}, {x:965, y:355, w:90, h:22, t:'solid'}, {x:1100, y:440, w:120, h:60, t:'solid'}, {x:1265, y:395, w:80, h:22, t:'dis', d:40}, {x:1390, y:355, w:75, h:22, t:'solid'}, {x:1510, y:315, w:75, h:22, t:'dis', d:45}, {x:1630, y:440, w:100, h:60, t:'solid'}, {x:1780, y:395, w:90, h:22, t:'solid'}, {x:1920, y:440, w:260, h:60, t:'solid'}],
     spks: [{x:120, y:418, w:45, h:22}, {x:520, y:418, w:40, h:22}, {x:795, y:418, w:50, h:22}, {x:1220, y:418, w:45, h:22}, {x:1730, y:418, w:50, h:22}],
-    mspks: [
-      {x:210, y:280, w:22, h:22, sx:165, ex:390, s:3.5, dir:1}, {x:580, y:200, w:22, h:22, sx:440, ex:760, s:4.5, dir:-1},
-      {x:950, y:240, w:22, h:22, sx:845, ex:1060, s:3.5, dir:1}, {x:1200, y:180, w:22, h:22, sx:1100, ex:1380, s:5, dir:-1},
-      {x:1600, y:280, w:22, h:22, sx:1510, ex:1720, s:3.5, dir:1}
-    ],
-    ceils: [{x:240, y:-20, w:50, h:22}, {x:530, y:-20, w:50, h:22}, {x:890, y:-20, w:60, h:22}, {x:1320, y:-20, w:55, h:22}, {x:1700, y:-20, w:80, h:22}],
-    gravs: [], pads: [{x:305, y:345, w:32, h:10, f:-13}, {x:970, y:345, w:32, h:10, f:-12}],
-    trolls: [
-      {x:80, t:'msg', m:"dodge THIS 💀"}, {x:310, t:'wind', d:150, f:1.5}, {x:312, t:'msg', m:"💨 HEADWIND 💨"},
-      {x:690, t:'msg', m:"spikes go brrr 📌"}, {x:1060, t:'weak', d:95}, {x:1062, t:'msg', m:"ur still alive?? 🤨"},
-      {x:1480, t:'dark', d:95}, {x:1482, t:'msg', m:"LIGHTS OUT 🌑"}, {x:1870, t:'msg', m:"final stretch... 😈"}
-    ]
+    mspks: [{x:210, y:280, w:22, h:22, sx:165, ex:390, s:3.5, dir:1}, {x:580, y:200, w:22, h:22, sx:440, ex:760, s:4.5, dir:-1}, {x:950, y:240, w:22, h:22, sx:845, ex:1060, s:3.5, dir:1}, {x:1200, y:180, w:22, h:22, sx:1100, ex:1380, s:5, dir:-1}, {x:1600, y:280, w:22, h:22, sx:1510, ex:1720, s:3.5, dir:1}],
+    ceils: [{x:240, y:-20, w:50, h:22}, {x:530, y:-20, w:50, h:22}, {x:890, y:-20, w:60, h:22}, {x:1320, y:-20, w:55, h:22}, {x:1700, y:-20, w:80, h:22}], gravs: [], pads: [{x:305, y:345, w:32, h:10, f:-13}, {x:970, y:345, w:32, h:10, f:-12}],
+    trolls: [{x:80, t:'msg', m:"dodge THIS 💀"}, {x:310, t:'wind', d:150, f:1.5}, {x:690, t:'msg', m:"spikes go brrr 📌"}, {x:1060, t:'weak', d:95}, {x:1480, t:'dark', d:95}]
   });
 
-  // LV5 - COMPLETELY REDONE AND BRUTAL
-  lvls.push({
-    name: "TRUST NOTHING 🤥", bg: "#001100", gnd: "#003a00", start: {x:30, y:390}, len: 2400, door: {x:2280, y:378, w:42, h:62},
-    plats: [
-      {x:0, y:440, w:80, h:60, t:'solid'},
-      
-      // Forced Choice (Bottom is fake, top is real)
-      {x:140, y:440, w:60, h:60, t:'fake'}, 
-      {x:140, y:370, w:60, h:20, t:'solid'}, 
-      {x:260, y:440, w:100, h:60, t:'solid'},
-      
-      // The Trap (Massive floor is fake over spikes, have to take top tiny blocks)
-      {x:400, y:440, w:200, h:60, t:'fake'}, 
-      {x:400, y:320, w:50, h:20, t:'solid'}, 
-      {x:500, y:280, w:50, h:20, t:'solid'},
-      {x:600, y:350, w:50, h:20, t:'solid'},
-      {x:680, y:440, w:80, h:60, t:'solid'},
-      
-      // Darkness Section (Mix of fake and real)
-      {x:820, y:440, w:60, h:60, t:'fake'},
-      {x:820, y:380, w:60, h:20, t:'solid'},
-      {x:940, y:440, w:60, h:60, t:'solid'},
-      {x:1060, y:440, w:60, h:60, t:'fake'},
-      {x:1180, y:440, w:100, h:60, t:'solid'},
-      
-      // Tiny + Ice + Timers
-      {x:1340, y:440, w:120, h:60, t:'fake'}, 
-      {x:1340, y:390, w:120, h:20, t:'dis', d:30}, 
-      {x:1520, y:400, w:40, h:20, t:'solid'},
-      {x:1620, y:360, w:40, h:20, t:'solid'},
-      
-      // Final Trap
-      {x:1720, y:440, w:200, h:60, t:'fake'}, 
-      {x:1720, y:320, w:60, h:20, t:'solid'},
-      {x:1840, y:380, w:60, h:20, t:'solid'},
-      {x:1960, y:440, w:100, h:60, t:'solid'},
-      {x:2120, y:440, w:300, h:60, t:'solid'},
-      
-      // Door Troll (Block right in front of door)
-      {x:2120, y:380, w:80, h:20, t:'fake'} 
-    ],
-    spks: [
-      {x:140, y:418, w:60, h:22}, // Under choice 1
-      {x:400, y:418, w:200, h:22}, // Death pit under big fake
-      {x:820, y:418, w:60, h:22},
-      {x:1060, y:418, w:60, h:22},
-      {x:1340, y:418, w:120, h:22}, // Under ice
-      {x:1720, y:418, w:200, h:22} // Final trap pit
-    ],
-    mspks: [
-      {x:420, y:200, w:22, h:22, sx:380, ex:620, s:4, dir:1}, // Guarding top steps
-      {x:880, y:280, w:22, h:22, sx:800, ex:1000, s:3.5, dir:1}, // In darkness
-      {x:1560, y:260, w:22, h:22, sx:1480, ex:1660, s:5, dir:-1} // Dodging while tiny
-    ],
-    ceils: [
-      {x:280, y:-20, w:60, h:22},
-      {x:1180, y:-20, w:80, h:22},
-      {x:1980, y:-20, w:60, h:22}
-    ],
-    gravs: [],
-    pads: [{x:690, y:430, w:30, h:10, f:-15}],
-    trolls: [
-      {x:60, t:'msg', m:"trust nothing. literally nothing."},
-      {x:200, t:'inv', d:85},
-      {x:202, t:'msg', m:"INVERTED 🔄"},
-      {x:360, t:'msg', m:"big platform = safe? 😂"},
-      {x:750, t:'dark', d:150},
-      {x:752, t:'msg', m:"DARKNESS + FAKES 🌑"},
-      {x:1250, t:'tiny', d:180},
-      {x:1252, t:'slip', d:180},
-      {x:1254, t:'msg', m:"TINY + ICE + TIMERS 🧊🐜"},
-      {x:1800, t:'weak', d:85},
-      {x:2050, t:'msg', m:"don't trust the door step 🚪"}
-    ]
+  // 5. TRUST NOTHING
+  lvls.push({ name: "TRUST NOTHING 🤥", bg: "#001100", gnd: "#003a00", start: {x:30, y:390}, len: 2400, door: {x:2280, y:378, w:42, h:62},
+    plats: [{x:0, y:440, w:80, h:60, t:'solid'}, {x:140, y:440, w:60, h:60, t:'fake'}, {x:140, y:370, w:60, h:20, t:'solid'}, {x:260, y:440, w:100, h:60, t:'solid'}, {x:400, y:440, w:200, h:60, t:'fake'}, {x:400, y:320, w:50, h:20, t:'solid'}, {x:500, y:280, w:50, h:20, t:'solid'}, {x:600, y:350, w:50, h:20, t:'solid'}, {x:680, y:440, w:80, h:60, t:'solid'}, {x:820, y:440, w:60, h:60, t:'fake'}, {x:820, y:380, w:60, h:20, t:'solid'}, {x:940, y:440, w:60, h:60, t:'solid'}, {x:1060, y:440, w:60, h:60, t:'fake'}, {x:1180, y:440, w:100, h:60, t:'solid'}, {x:1340, y:440, w:120, h:60, t:'fake'}, {x:1340, y:390, w:120, h:20, t:'dis', d:30}, {x:1520, y:400, w:40, h:20, t:'solid'}, {x:1620, y:360, w:40, h:20, t:'solid'}, {x:1720, y:440, w:200, h:60, t:'fake'}, {x:1720, y:320, w:60, h:20, t:'solid'}, {x:1840, y:380, w:60, h:20, t:'solid'}, {x:1960, y:440, w:100, h:60, t:'solid'}, {x:2120, y:440, w:300, h:60, t:'solid'}, {x:2120, y:380, w:80, h:20, t:'fake'}],
+    spks: [{x:140, y:418, w:60, h:22}, {x:400, y:418, w:200, h:22}, {x:820, y:418, w:60, h:22}, {x:1060, y:418, w:60, h:22}, {x:1340, y:418, w:120, h:22}, {x:1720, y:418, w:200, h:22}],
+    mspks: [{x:420, y:200, w:22, h:22, sx:380, ex:620, s:4, dir:1}, {x:880, y:280, w:22, h:22, sx:800, ex:1000, s:3.5, dir:1}, {x:1560, y:260, w:22, h:22, sx:1480, ex:1660, s:5, dir:-1}],
+    ceils: [{x:280, y:-20, w:60, h:22}, {x:1180, y:-20, w:80, h:22}, {x:1980, y:-20, w:60, h:22}], gravs: [], pads: [{x:690, y:430, w:30, h:10, f:-15}],
+    trolls: [{x:60, t:'msg', m:"trust nothing. literally nothing."}, {x:200, t:'inv', d:85}, {x:360, t:'msg', m:"big platform = safe? 😂"}, {x:750, t:'dark', d:150}, {x:1250, t:'tiny', d:180}, {x:1252, t:'slip', d:180}, {x:1800, t:'weak', d:85}, {x:2050, t:'msg', m:"don't trust the door step 🚪"}]
   });
 
-  // LV6
-  lvls.push({
-    name: "THE GAUNTLET ☠", bg: "#0a000a", gnd: "#330033", start: {x:20, y:390}, len: 2800, door: {x:2680, y:378, w:42, h:62},
+  // 6. THE GAUNTLET
+  lvls.push({ name: "THE GAUNTLET ☠", bg: "#0a000a", gnd: "#330033", start: {x:20, y:390}, len: 2800, door: {x:2680, y:378, w:42, h:62},
+    plats: [{x:0, y:440, w:100, h:60, t:'solid'}, {x:140, y:392, w:70, h:22, t:'dis', d:30}, {x:255, y:352, w:70, h:22, t:'solid'}, {x:370, y:440, w:60, h:60, t:'fake'}, {x:360, y:310, w:80, h:22, t:'solid'}, {x:490, y:440, w:100, h:60, t:'solid'}, {x:490, y:0, w:100, h:60, t:'solid'}, {x:650, y:440, w:60, h:60, t:'solid'}, {x:650, y:0, w:60, h:60, t:'solid'}, {x:770, y:440, w:80, h:60, t:'dis', d:24}, {x:770, y:0, w:80, h:60, t:'dis', d:24}, {x:910, y:440, w:130, h:60, t:'solid'}, {x:910, y:0, w:130, h:60, t:'solid'}, {x:1100, y:392, w:60, h:22, t:'fake'}, {x:1080, y:342, w:80, h:22, t:'solid'}, {x:1210, y:440, w:80, h:60, t:'solid'}, {x:1340, y:378, w:70, h:22, t:'dis', d:35}, {x:1460, y:440, w:100, h:60, t:'solid'}, {x:1600, y:392, w:55, h:22, t:'solid'}, {x:1700, y:440, w:70, h:60, t:'fake'}, {x:1690, y:342, w:80, h:22, t:'solid'}, {x:1820, y:440, w:120, h:60, t:'solid'}, {x:1990, y:440, w:60, h:60, t:'dis', d:26}, {x:2100, y:392, w:70, h:22, t:'solid'}, {x:2220, y:440, w:80, h:60, t:'solid'}, {x:2350, y:372, w:90, h:22, t:'dis', d:32}, {x:2490, y:440, w:280, h:60, t:'solid'}],
+    spks: [{x:210, y:418, w:45, h:22}, {x:590, y:418, w:60, h:22}, {x:1040, y:418, w:60, h:22}, {x:1290, y:418, w:50, h:22}, {x:1560, y:418, w:40, h:22}, {x:1780, y:418, w:40, h:22}, {x:2290, y:418, w:50, h:22}],
+    mspks: [{x:180, y:240, w:22, h:22, sx:120, ex:330, s:4, dir:1}, {x:570, y:195, w:22, h:22, sx:490, ex:730, s:5, dir:-1}, {x:1080, y:265, w:22, h:22, sx:1010, ex:1230, s:3.5, dir:1}, {x:1520, y:195, w:22, h:22, sx:1420, ex:1680, s:4.5, dir:-1}, {x:2020, y:285, w:22, h:22, sx:1940, ex:2180, s:4, dir:1}, {x:2400, y:245, w:22, h:22, sx:2300, ex:2550, s:5, dir:-1}],
+    ceils: [{x:300, y:-20, w:50, h:22}, {x:700, y:-20, w:60, h:22}, {x:1200, y:-20, w:55, h:22}, {x:1640, y:-20, w:60, h:22}, {x:2070, y:-20, w:80, h:22}, {x:2380, y:-20, w:55, h:22}], gravs: [{x:470, y:0, w:30, h:500}, {x:740, y:0, w:30, h:500}, {x:1440, y:0, w:30, h:500}], pads: [{x:260, y:342, w:30, h:10, f:-14}, {x:1215, y:428, w:30, h:10, f:-13}, {x:2105, y:382, w:30, h:10, f:-15}],
+    trolls: [{x:40, t:'msg', m:"halfway there LOL"}, {x:215, t:'weak', d:75}, {x:390, t:'msg', m:"everything at once 😈"}, {x:590, t:'inv', d:85}, {x:790, t:'dark', d:70}, {x:980, t:'wind', d:120, f:2}, {x:1170, t:'tiny', d:115}, {x:1500, t:'slip', d:105}, {x:1680, t:'weak', d:95}, {x:2010, t:'inv', d:80}, {x:2200, t:'quake', d:80}]
+  });
+
+  // 7. WINDY BOI
+  lvls.push({ name: "WINDY BOI 💨", bg: "#001a1a", gnd: "#004d4d", start: {x:30, y:390}, len: 2400, door: {x:2280, y:378, w:42, h:62},
+    plats: [{x:0, y:440, w:100, h:60, t:'solid'}, {x:200, y:400, w:50, h:20, t:'solid'}, {x:400, y:360, w:50, h:20, t:'solid'}, {x:600, y:440, w:100, h:60, t:'solid'}, {x:800, y:400, w:40, h:20, t:'solid'}, {x:1000, y:360, w:40, h:20, t:'solid'}, {x:1200, y:440, w:100, h:60, t:'solid'}, {x:1400, y:380, w:30, h:20, t:'solid'}, {x:1600, y:320, w:30, h:20, t:'solid'}, {x:1800, y:440, w:100, h:60, t:'solid'}, {x:2100, y:440, w:300, h:60, t:'solid'}],
+    spks: [{x:100, y:480, w:100, h:20}, {x:700, y:480, w:100, h:20}, {x:1300, y:480, w:100, h:20}], mspks: [], ceils: [], gravs: [], pads: [],
+    trolls: [{x:50, t:'wind', d:300, f:2.5}, {x:52, t:'msg', m:"woooosh"}, {x:650, t:'wind', d:300, f:-2.5}, {x:652, t:'msg', m:"wind reversed bro"}, {x:1250, t:'wind', d:300, f:3}, {x:1850, t:'wind', d:200, f:-3.5}]
+  });
+
+  // 8. ICE SKATING
+  lvls.push({ name: "ICE SKATING 🧊", bg: "#000033", gnd: "#000066", start: {x:30, y:390}, len: 2000, door: {x:1880, y:378, w:42, h:62},
+    plats: [{x:0, y:440, w:150, h:60, t:'solid'}, {x:250, y:440, w:100, h:60, t:'solid'}, {x:450, y:440, w:100, h:60, t:'solid'}, {x:450, y:0, w:100, h:60, t:'solid'}, {x:650, y:440, w:100, h:60, t:'solid'}, {x:650, y:0, w:100, h:60, t:'solid'}, {x:850, y:440, w:100, h:60, t:'solid'}, {x:1100, y:440, w:80, h:60, t:'solid'}, {x:1350, y:440, w:80, h:60, t:'solid'}, {x:1600, y:440, w:400, h:60, t:'solid'}],
+    spks: [{x:270, y:418, w:60, h:22}, {x:870, y:418, w:60, h:22}], mspks: [{x:500, y:200, w:22, h:22, sx:450, ex:650, s:4, dir:1}], ceils: [],
+    gravs: [{x:380, y:0, w:30, h:500}, {x:580, y:0, w:30, h:500}], pads: [],
+    trolls: [{x:50, t:'slip', d:9999}, {x:52, t:'msg', m:"friction left the chat"}, {x:1000, t:'weak', d:100}]
+  });
+
+  // 9. BLIND JUMPS
+  lvls.push({ name: "BLIND JUMPS 🌑", bg: "#000", gnd: "#111", start: {x:30, y:390}, len: 1800, door: {x:1680, y:378, w:42, h:62},
+    plats: [{x:0, y:440, w:120, h:60, t:'solid'}, {x:180, y:400, w:60, h:20, t:'solid'}, {x:300, y:360, w:60, h:20, t:'fake'}, {x:300, y:300, w:60, h:20, t:'solid'}, {x:450, y:440, w:100, h:60, t:'solid'}, {x:600, y:380, w:40, h:20, t:'solid'}, {x:750, y:320, w:40, h:20, t:'solid'}, {x:900, y:440, w:100, h:60, t:'fake'}, {x:900, y:280, w:100, h:20, t:'solid'}, {x:1100, y:440, w:100, h:60, t:'solid'}, {x:1300, y:400, w:60, h:20, t:'solid'}, {x:1500, y:440, w:300, h:60, t:'solid'}],
+    spks: [{x:450, y:418, w:100, h:22}, {x:900, y:418, w:100, h:22}], mspks: [], ceils: [{x:600, y:-20, w:40, h:22}], gravs: [], pads: [],
+    trolls: [{x:50, t:'dark', d:9999}, {x:52, t:'msg', m:"good luck seeing anything"}, {x:250, t:'msg', m:"trust your instincts (don't)"}]
+  });
+
+  // 10. MIND BENDER
+  lvls.push({ name: "MIND BENDER 🔄", bg: "#1a0a1a", gnd: "#4d1a4d", start: {x:30, y:390}, len: 2000, door: {x:1880, y:378, w:42, h:62},
+    plats: [{x:0, y:440, w:100, h:60, t:'solid'}, {x:200, y:440, w:100, h:60, t:'solid'}, {x:200, y:0, w:100, h:60, t:'solid'}, {x:400, y:440, w:100, h:60, t:'solid'}, {x:400, y:0, w:100, h:60, t:'solid'}, {x:600, y:440, w:100, h:60, t:'solid'}, {x:600, y:0, w:100, h:60, t:'solid'}, {x:800, y:440, w:100, h:60, t:'solid'}, {x:1000, y:440, w:80, h:60, t:'solid'}, {x:1200, y:440, w:80, h:60, t:'solid'}, {x:1400, y:440, w:80, h:60, t:'solid'}, {x:1600, y:440, w:400, h:60, t:'solid'}],
+    spks: [{x:220, y:418, w:60, h:22}, {x:420, y:60, w:60, h:22}, {x:620, y:418, w:60, h:22}], mspks: [], ceils: [],
+    gravs: [{x:130, y:0, w:30, h:500}, {x:330, y:0, w:30, h:500}, {x:530, y:0, w:30, h:500}, {x:730, y:0, w:30, h:500}], pads: [],
+    trolls: [{x:20, t:'inv', d:9999}, {x:22, t:'msg', m:"left is right, up is down"}]
+  });
+
+  // 11. TINY PANIC
+  lvls.push({ name: "TINY PANIC 🐜", bg: "#2a1a00", gnd: "#663300", start: {x:30, y:390}, len: 2000, door: {x:1880, y:378, w:42, h:62},
+    plats: [{x:0, y:440, w:100, h:60, t:'solid'}, {x:200, y:440, w:60, h:60, t:'solid'}, {x:350, y:440, w:60, h:60, t:'solid'}, {x:500, y:440, w:60, h:60, t:'solid'}, {x:650, y:440, w:60, h:60, t:'solid'}, {x:800, y:440, w:60, h:60, t:'solid'}, {x:950, y:440, w:60, h:60, t:'solid'}, {x:1100, y:440, w:60, h:60, t:'solid'}, {x:1250, y:440, w:60, h:60, t:'solid'}, {x:1400, y:440, w:60, h:60, t:'solid'}, {x:1550, y:440, w:400, h:60, t:'solid'}],
+    spks: [], mspks: [],
+    ceils: [{x:200, y:-20, w:60, h:22}, {x:350, y:-20, w:60, h:22}, {x:500, y:-20, w:60, h:22}, {x:650, y:-20, w:60, h:22}, {x:800, y:-20, w:60, h:22}, {x:950, y:-20, w:60, h:22}, {x:1100, y:-20, w:60, h:22}, {x:1250, y:-20, w:60, h:22}, {x:1400, y:-20, w:60, h:22}],
+    gravs: [], pads: [],
+    trolls: [{x:50, t:'tiny', d:9999}, {x:52, t:'msg', m:"don't get squashed"}]
+  });
+
+  // 12. WAIT FOR IT
+  lvls.push({ name: "WAIT FOR IT ⏳", bg: "#001a33", gnd: "#003366", start: {x:30, y:390}, len: 2200, door: {x:2080, y:378, w:42, h:62},
+    plats: [{x:0, y:440, w:150, h:60, t:'solid'}, {x:250, y:440, w:80, h:60, t:'dis', d:15}, {x:400, y:440, w:80, h:60, t:'dis', d:15}, {x:550, y:440, w:80, h:60, t:'dis', d:15}, {x:700, y:440, w:150, h:60, t:'solid'}, {x:950, y:440, w:80, h:60, t:'dis', d:10}, {x:1100, y:440, w:80, h:60, t:'dis', d:10}, {x:1250, y:440, w:80, h:60, t:'dis', d:10}, {x:1400, y:440, w:150, h:60, t:'solid'}, {x:1650, y:400, w:50, h:20, t:'dis', d:5}, {x:1800, y:440, w:400, h:60, t:'solid'}],
+    spks: [{x:700, y:418, w:150, h:22}, {x:1400, y:418, w:150, h:22}],
+    mspks: [{x:300, y:200, w:22, h:22, sx:200, ex:600, s:1.5, dir:1}, {x:1000, y:200, w:22, h:22, sx:900, ex:1300, s:1.5, dir:1}],
+    ceils: [], gravs: [], pads: [],
+    trolls: [{x:50, t:'msg', m:"patience is a virtue"}]
+  });
+
+  // 13. PSYCHOLOGICAL WARFARE
+  lvls.push({ name: "PSYCHO WARFARE 🧠", bg: "#1a0000", gnd: "#4d0000", start: {x:30, y:390}, len: 2400, door: {x:2280, y:378, w:42, h:62},
+    plats: [{x:0, y:440, w:100, h:60, t:'solid'}, {x:150, y:440, w:100, h:60, t:'fake'}, {x:150, y:350, w:100, h:20, t:'fake'}, {x:150, y:250, w:100, h:20, t:'solid'}, {x:350, y:440, w:100, h:60, t:'solid'}, {x:500, y:440, w:100, h:60, t:'fake'}, {x:650, y:440, w:100, h:60, t:'solid'}, {x:800, y:440, w:200, h:60, t:'fake'}, {x:850, y:350, w:100, h:20, t:'solid'}, {x:1100, y:440, w:100, h:60, t:'solid'}, {x:1300, y:440, w:100, h:60, t:'fake'}, {x:1450, y:440, w:100, h:60, t:'fake'}, {x:1600, y:440, w:100, h:60, t:'solid'}, {x:1800, y:440, w:100, h:60, t:'fake'}, {x:1800, y:200, w:100, h:20, t:'solid'}, {x:2000, y:440, w:400, h:60, t:'solid'}],
+    spks: [{x:150, y:418, w:100, h:22}, {x:500, y:418, w:100, h:22}, {x:800, y:418, w:200, h:22}, {x:1300, y:418, w:100, h:22}, {x:1450, y:418, w:100, h:22}, {x:1800, y:418, w:100, h:22}],
+    mspks: [], ceils: [], gravs: [], pads: [{x:380, y:430, w:30, h:10, f:-18}, {x:1630, y:430, w:30, h:10, f:-20}],
+    trolls: [{x:50, t:'msg', m:"nothing is real"}, {x:400, t:'msg', m:"or is it?"}, {x:1150, t:'msg', m:"jump pad = death... maybe"}]
+  });
+
+  // 14. THE TRUE GAUNTLET
+  lvls.push({ name: "THE TRUE GAUNTLET 🔥", bg: "#2a0a0a", gnd: "#660000", start: {x:20, y:390}, len: 3000, door: {x:2880, y:378, w:42, h:62},
+    plats: [{x:0, y:440, w:100, h:60, t:'solid'}, {x:150, y:400, w:50, h:20, t:'dis', d:20}, {x:250, y:350, w:50, h:20, t:'solid'}, {x:400, y:440, w:100, h:60, t:'solid'}, {x:550, y:400, w:50, h:20, t:'fake'}, {x:550, y:300, w:50, h:20, t:'solid'}, {x:700, y:440, w:100, h:60, t:'solid'}, {x:850, y:440, w:100, h:60, t:'solid'}, {x:850, y:0, w:100, h:60, t:'solid'}, {x:1050, y:440, w:100, h:60, t:'solid'}, {x:1200, y:400, w:50, h:20, t:'dis', d:15}, {x:1350, y:350, w:50, h:20, t:'dis', d:15}, {x:1500, y:440, w:100, h:60, t:'solid'}, {x:1700, y:400, w:50, h:20, t:'fake'}, {x:1700, y:250, w:50, h:20, t:'solid'}, {x:1900, y:440, w:100, h:60, t:'solid'}, {x:2100, y:440, w:100, h:60, t:'solid'}, {x:2300, y:440, w:100, h:60, t:'fake'}, {x:2300, y:300, w:100, h:20, t:'solid'}, {x:2500, y:440, w:400, h:60, t:'solid'}],
+    spks: [{x:400, y:418, w:100, h:22}, {x:700, y:418, w:100, h:22}, {x:1500, y:418, w:100, h:22}, {x:1900, y:418, w:100, h:22}, {x:2300, y:418, w:100, h:22}],
+    mspks: [{x:200, y:200, w:22, h:22, sx:100, ex:300, s:4, dir:1}, {x:600, y:200, w:22, h:22, sx:500, ex:700, s:5, dir:-1}, {x:1250, y:200, w:22, h:22, sx:1150, ex:1450, s:6, dir:1}, {x:1750, y:200, w:22, h:22, sx:1650, ex:1850, s:5, dir:-1}, {x:2150, y:200, w:22, h:22, sx:2050, ex:2250, s:4, dir:1}],
+    ceils: [{x:420, y:-20, w:60, h:22}, {x:720, y:-20, w:60, h:22}, {x:1520, y:-20, w:60, h:22}, {x:1920, y:-20, w:60, h:22}],
+    gravs: [{x:780, y:0, w:30, h:500}, {x:980, y:0, w:30, h:500}], pads: [{x:1080, y:430, w:30, h:10, f:-14}, {x:2130, y:430, w:30, h:10, f:-16}],
+    trolls: [{x:50, t:'msg', m:"almost done"}, {x:300, t:'weak', d:80}, {x:600, t:'inv', d:80}, {x:900, t:'slip', d:100}, {x:1100, t:'dark', d:80}, {x:1400, t:'tiny', d:100}, {x:1600, t:'wind', d:100, f:2}, {x:1800, t:'quake', d:80}, {x:2000, t:'msg', m:"I can feel the rage"}, {x:2200, t:'inv', d:100}]
+  });
+
+  // 15. MYTHPAT'S NIGHTMARE (THE GRAND FINALE)
+  lvls.push({ name: "MYTHPAT'S NIGHTMARE 🤡", bg: "#330000", gnd: "#000", start: {x:50, y:390}, len: 3000, door: {x:280, y:120, w:42, h:62}, // TRUE DOOR IS HIDDEN BACKWARDS/UP
     plats: [
-      {x:0, y:440, w:100, h:60, t:'solid'}, {x:140, y:392, w:70, h:22, t:'dis', d:30}, {x:255, y:352, w:70, h:22, t:'solid'},
-      {x:370, y:440, w:60, h:60, t:'fake'}, {x:360, y:310, w:80, h:22, t:'solid'}, {x:490, y:440, w:100, h:60, t:'solid'},
-      {x:490, y:0, w:100, h:60, t:'solid'}, {x:650, y:440, w:60, h:60, t:'solid'}, {x:650, y:0, w:60, h:60, t:'solid'},
-      {x:770, y:440, w:80, h:60, t:'dis', d:24}, {x:770, y:0, w:80, h:60, t:'dis', d:24}, {x:910, y:440, w:130, h:60, t:'solid'},
-      {x:910, y:0, w:130, h:60, t:'solid'}, {x:1100, y:392, w:60, h:22, t:'fake'}, {x:1080, y:342, w:80, h:22, t:'solid'},
-      {x:1210, y:440, w:80, h:60, t:'solid'}, {x:1340, y:378, w:70, h:22, t:'dis', d:35}, {x:1460, y:440, w:100, h:60, t:'solid'},
-      {x:1600, y:392, w:55, h:22, t:'solid'}, {x:1700, y:440, w:70, h:60, t:'fake'}, {x:1690, y:342, w:80, h:22, t:'solid'},
-      {x:1820, y:440, w:120, h:60, t:'solid'}, {x:1990, y:440, w:60, h:60, t:'dis', d:26}, {x:2100, y:392, w:70, h:22, t:'solid'},
-      {x:2220, y:440, w:80, h:60, t:'solid'}, {x:2350, y:372, w:90, h:22, t:'dis', d:32}, {x:2490, y:440, w:280, h:60, t:'solid'},
+      {x:0, y:440, w:3000, h:60, t:'solid'}, // A seemingly massive, flat, safe run
+      {x:2500, y:440, w:300, h:60, t:'fake'}, // Trap at the very end where the fake door is
+      {x:0, y:180, w:100, h:20, t:'solid'}, // Hidden platform above spawn
+      {x:150, y:120, w:50, h:20, t:'solid'}, // Hidden step 2
+      {x:250, y:180, w:100, h:20, t:'solid'} // Hidden door platform
     ],
-    spks: [
-      {x:210, y:418, w:45, h:22}, {x:590, y:418, w:60, h:22}, {x:1040, y:418, w:60, h:22},
-      {x:1290, y:418, w:50, h:22}, {x:1560, y:418, w:40, h:22}, {x:1780, y:418, w:40, h:22}, {x:2290, y:418, w:50, h:22}
-    ],
-    mspks: [
-      {x:180, y:240, w:22, h:22, sx:120, ex:330, s:4, dir:1}, {x:570, y:195, w:22, h:22, sx:490, ex:730, s:5, dir:-1},
-      {x:1080, y:265, w:22, h:22, sx:1010, ex:1230, s:3.5, dir:1}, {x:1520, y:195, w:22, h:22, sx:1420, ex:1680, s:4.5, dir:-1},
-      {x:2020, y:285, w:22, h:22, sx:1940, ex:2180, s:4, dir:1}, {x:2400, y:245, w:22, h:22, sx:2300, ex:2550, s:5, dir:-1}
-    ],
-    ceils: [{x:300, y:-20, w:50, h:22}, {x:700, y:-20, w:60, h:22}, {x:1200, y:-20, w:55, h:22}, {x:1640, y:-20, w:60, h:22}, {x:2070, y:-20, w:80, h:22}, {x:2380, y:-20, w:55, h:22}],
-    gravs: [{x:470, y:0, w:30, h:500}, {x:740, y:0, w:30, h:500}, {x:1440, y:0, w:30, h:500}],
-    pads: [{x:260, y:342, w:30, h:10, f:-14}, {x:1215, y:428, w:30, h:10, f:-13}, {x:2105, y:382, w:30, h:10, f:-15}],
+    spks: [{x:2500, y:480, w:300, h:20}], // Pit of spikes if he falls for the fake door
+    mspks: [], ceils: [], gravs: [], pads: [{x:100, y:430, w:30, h:10, f:-16}], // Bounce pad at start to get up
     trolls: [
-      {x:40, t:'msg', m:"FINAL LEVEL 💀"}, {x:215, t:'weak', d:75}, {x:390, t:'msg', m:"everything at once 😈"},
-      {x:590, t:'inv', d:85}, {x:592, t:'msg', m:"REVERSED IN FLIP ZONE 🤯"}, {x:790, t:'dark', d:70},
-      {x:792, t:'msg', m:"LIGHTS OUT 😂"}, {x:980, t:'wind', d:120, f:2}, {x:982, t:'msg', m:"💨 WIND SAID NO 💨"},
-      {x:1170, t:'tiny', d:115}, {x:1350, t:'msg', m:"so tiny so fragile 🐜"}, {x:1500, t:'slip', d:105},
-      {x:1680, t:'weak', d:95}, {x:1800, t:'msg', m:"ALMOST... don't choke 😬"}, {x:2010, t:'inv', d:80},
-      {x:2012, t:'msg', m:"INVERTED AGAIN BYE 👋"}, {x:2200, t:'quake', d:80}, {x:2202, t:'msg', m:"EARTHQUAKE 🌋"},
-      {x:2450, t:'msg', m:"THE DOOR!! GOOOO!! 🚪"}
+      {x:300, t:'msg', m:"Mythpat? More like Miss-pat 😂"},
+      {x:600, t:'msg', m:"A straight line? Too easy?"},
+      {x:900, t:'msg', m:"Slayy Point plays better than you 💀"},
+      {x:1200, t:'msg', m:"Where is the mimicry now?"},
+      {x:1500, t:'msg', m:"Keep walking bro"},
+      {x:1800, t:'msg', m:"Almost at the door..."},
+      {x:2100, t:'msg', m:"I made this specifically to watch you suffer"},
+      {x:2400, t:'msg', m:"Oh wait, the door is FAKE 😂"},
+      {x:2600, t:'msg', m:"THE REAL DOOR IS AT THE START BRO"},
+      // Fake door rendering handled in custom render block below
     ]
   });
 }
@@ -667,6 +308,13 @@ function initPlat(p) { p.gone = false; p.timer = 0; p.touched = false; p.rev = f
 
 function loadLvl(idx) {
   currLvl = idx;
+  if(idx >= lvls.length) { // Beat the game
+    state = 'win';
+    $('winMessage').textContent = deaths<50 ? "YOU ARE A GAMING GOD 🏆" : "YOU DID IT (finally) 😒";
+    $('winDeaths').textContent = `Total Deaths: ${deaths}`;
+    ui.screens.win.classList.remove('hidden');
+    return;
+  }
   const L = lvls[idx];
   
   flipG = false; weakJ = false; weakJT = 0; invT = 0; darkT = 0; tinyT = 0; slipT = 0; windF = 0; windT = 0; quakeT = 0;
@@ -689,34 +337,20 @@ function loadLvl(idx) {
   ui.taunt.classList.remove('active');
 }
 
-function showTaunt(msg) {
-  ui.taunt.textContent = msg;
-  ui.taunt.classList.add('active');
-  tauntT = 90;
-}
-
+function showTaunt(msg) { ui.taunt.textContent = msg; ui.taunt.classList.add('active'); tauntT = 90; }
 function shake(amt) { shakeT = Math.max(shakeT, amt); }
-
 function popup(x, y, txt, col) { popups.push({x, y, txt, col, life: 55, max: 55, vy: -1.2}); }
-
-function emit(x, y, c, n, sp) {
-  for (let i=0; i<n; i++) particles.push({
-    x, y, vx: (Math.random()-0.5)*sp, vy: (Math.random()-0.5)*sp-2,
-    c, sz: 1.5+Math.random()*4, life: 20+Math.random()*30
-  });
-}
+function emit(x, y, c, n, sp) { for (let i=0; i<n; i++) particles.push({ x, y, vx: (Math.random()-0.5)*sp, vy: (Math.random()-0.5)*sp-2, c, sz: 1.5+Math.random()*4, life: 20+Math.random()*30 }); }
 
 function killPlayer() {
   if (!P.alive) return;
   P.alive = false; deaths++; lvlDeaths++;
   ui.death.textContent = `☠ ${deaths}`;
-  
   emit(P.x+P.w/2, P.y+P.h/2, '#ff0040', 40, 10);
   shake(18);
   $('gameContainer').classList.remove('death-flash');
   void $('gameContainer').offsetWidth;
   $('gameContainer').classList.add('death-flash');
-  
   lastDeathX = P.x; deathAnimT = 25;
 
   setTimeout(() => {
@@ -726,7 +360,6 @@ function killPlayer() {
     if(deaths===50) tnt="FIFTY DEATHS. I'm actually impressed";
     if(deaths===69) tnt="nice... wait no that's 69 deaths 😂";
     if(deaths===100) tnt="💯 DEATHS ACHIEVEMENT UNLOCKED 💯";
-    
     $('deathTaunt').textContent = tnt;
     $('deathStats').textContent = `Level Deaths: ${lvlDeaths} | Total: ${deaths}`;
     ui.screens.dead.classList.remove('hidden');
@@ -734,9 +367,7 @@ function killPlayer() {
   }, 350);
 }
 
-function aabb(ax, ay, aw, ah, bx, by, bw, bh) {
-  return ax < bx+bw && ax+aw > bx && ay < by+bh && ay+ah > by;
-}
+function aabb(ax, ay, aw, ah, bx, by, bw, bh) { return ax < bx+bw && ax+aw > bx && ay < by+bh && ay+ah > by; }
 
 function update() {
   if (state !== 'play' || !P.alive) return;
@@ -768,12 +399,9 @@ function update() {
   let ml = keys['ArrowLeft'] || keys['KeyA'];
   let mr = keys['ArrowRight'] || keys['KeyD'];
   let mj = keys['Space'] || keys['ArrowUp'] || keys['KeyW'];
-  
   if(invT>0) { let t = ml; ml = mr; mr = t; }
 
-  const acc = slipT>0 ? 0.22 : 1;
-  const fri = slipT>0 ? 0.98 : FRIC;
-
+  const acc = slipT>0 ? 0.22 : 1; const fri = slipT>0 ? 0.98 : FRIC;
   if(ml) { P.vx -= P.spd * acc * 0.35; P.face = -1; }
   if(mr) { P.vx += P.spd * acc * 0.35; P.face = 1; }
   P.vx *= fri;
@@ -781,39 +409,22 @@ function update() {
   P.vx = Math.max(-P.spd, Math.min(P.spd, P.vx));
   if(Math.abs(P.vx) < 0.1) P.vx = 0;
 
-  if(mj && P.gnd) {
-    P.vy = jp * gDir; P.gnd = false;
-    P.sq = 0.6; P.st = 1.4;
-    emit(P.x+P.w/2, P.y+(flipG?0:P.h), '#fff', 4, 4);
-  }
+  if(mj && P.gnd) { P.vy = jp * gDir; P.gnd = false; P.sq = 0.6; P.st = 1.4; emit(P.x+P.w/2, P.y+(flipG?0:P.h), '#fff', 4, 4); }
+  P.vy += grav; P.vy = Math.max(-MAX_FALL, Math.min(MAX_FALL, P.vy));
 
-  P.vy += grav;
-  P.vy = Math.max(-MAX_FALL, Math.min(MAX_FALL, P.vy));
-
-  // 1. Move X
   P.x += P.vx;
-  
-  // 2. Resolve X
   L.plats.forEach(p => {
     if(p.gone || p.t === 'fake') return;
     if (aabb(P.x, P.y+1, P.w, P.h-2, p.x, p.y, p.w, p.h)) {
-      if (P.vx > 0) { P.x = p.x - P.w; P.vx = 0; }
-      else if (P.vx < 0) { P.x = p.x + p.w; P.vx = 0; }
+      if (P.vx > 0) { P.x = p.x - P.w; P.vx = 0; } else if (P.vx < 0) { P.x = p.x + p.w; P.vx = 0; }
     }
   });
 
-  // 3. Move Y
-  P.y += P.vy;
-  P.gnd = false;
-
-  // 4. Resolve Y
+  P.y += P.vy; P.gnd = false;
   L.plats.forEach(p => {
     if(p.gone) return;
     if(p.t === 'fake') {
-      if(!p.rev && aabb(P.x+1, P.y, P.w-2, P.h, p.x, p.y, p.w, p.h)) {
-        p.rev = true; emit(p.x+p.w/2, p.y+p.h/2, '#ff4444', 20, 6);
-        popup(p.x+p.w/2, p.y-10, "FAKE! 😂", "#ff4444"); shake(5);
-      }
+      if(!p.rev && aabb(P.x+1, P.y, P.w-2, P.h, p.x, p.y, p.w, p.h)) { p.rev = true; emit(p.x+p.w/2, p.y+p.h/2, '#ff4444', 20, 6); popup(p.x+p.w/2, p.y-10, "FAKE! 😂", "#ff4444"); shake(5); }
       return;
     }
     if (aabb(P.x+1, P.y, P.w-2, P.h, p.x, p.y, p.w, p.h)) {
@@ -829,31 +440,15 @@ function update() {
 
   L.plats.forEach(p => {
     if(p.t!=='dis') return;
-    if(p.touched && p.timer>0) {
-      p.timer--; p.shx = p.timer<15 ? (Math.random()-0.5)*4 : 0;
-      if(!p.timer) { p.gone=true; p.respawnT=150; emit(p.x+p.w/2, p.y, '#ffaa00', 12, 5); }
-    }
+    if(p.touched && p.timer>0) { p.timer--; p.shx = p.timer<15 ? (Math.random()-0.5)*4 : 0; if(!p.timer) { p.gone=true; p.respawnT=150; emit(p.x+p.w/2, p.y, '#ffaa00', 12, 5); } }
     if(p.gone && !--p.respawnT) { p.gone=false; p.timer=0; p.touched=false; p.shx=0; }
   });
 
-  L.pads.forEach(b => {
-    if(aabb(P.x, P.y, P.w, P.h, b.x, b.y, b.w, b.h)) { P.vy = b.f * (flipG?-1:1); P.gnd=false; emit(b.x+b.w/2, b.y, '#00ffaa', 12, 6); shake(4); }
-  });
-
-  L.gravs.forEach(g => {
-    let inZ = aabb(P.x, P.y, P.w, P.h, g.x, g.y, g.w, g.h);
-    if(inZ && !g.on) { flipG = !flipG; g.on = true; emit(P.x+P.w/2, P.y+P.h/2, '#aa44ff', 20, 7); shake(8); popup(P.x+P.w/2, P.y-25, "FLIP! 🙃", "#aa44ff"); }
-    if(!inZ) g.on = false;
-  });
-
+  L.pads.forEach(b => { if(aabb(P.x, P.y, P.w, P.h, b.x, b.y, b.w, b.h)) { P.vy = b.f * (flipG?-1:1); P.gnd=false; emit(b.x+b.w/2, b.y, '#00ffaa', 12, 6); shake(4); } });
+  L.gravs.forEach(g => { let inZ = aabb(P.x, P.y, P.w, P.h, g.x, g.y, g.w, g.h); if(inZ && !g.on) { flipG = !flipG; g.on = true; emit(P.x+P.w/2, P.y+P.h/2, '#aa44ff', 20, 7); shake(8); popup(P.x+P.w/2, P.y-25, "FLIP! 🙃", "#aa44ff"); } if(!inZ) g.on = false; });
   L.spks.forEach(s => { if(aabb(P.x+2, P.y+2, P.w-4, P.h-4, s.x, s.y, s.w, s.h)) killPlayer(); });
   L.mspks.forEach(s => { s.x += s.s * s.dir; if(s.x<=s.sx || s.x>=s.ex) s.dir *= -1; if(aabb(P.x+2, P.y+2, P.w-4, P.h-4, s.x, s.y, s.w, s.h)) killPlayer(); });
-
-  L.ceils.forEach(c => {
-    if(!c.trig && Math.abs((P.x+P.w/2)-(c.x+c.w/2))<110) { c.trig=true; c.vy=0; }
-    if(c.trig) { c.vy += 0.48; c.cy += c.vy; if(aabb(P.x+2, P.y+2, P.w-4, P.h-4, c.x, c.cy, c.w, c.h)) killPlayer(); if(c.cy > H+60) { c.cy = c.y; c.trig = false; c.vy = 0; } }
-  });
-
+  L.ceils.forEach(c => { if(!c.trig && Math.abs((P.x+P.w/2)-(c.x+c.w/2))<110) { c.trig=true; c.vy=0; } if(c.trig) { c.vy += 0.48; c.cy += c.vy; if(aabb(P.x+2, P.y+2, P.w-4, P.h-4, c.x, c.cy, c.w, c.h)) killPlayer(); if(c.cy > H+60) { c.cy = c.y; c.trig = false; c.vy = 0; } } });
   L.trolls.forEach(t => {
     if(t.trig) return;
     if(P.x+P.w > t.x && P.x < t.x+30) {
@@ -880,7 +475,7 @@ function update() {
       ui.screens.comp.classList.remove('hidden');
     } else {
       state = 'win';
-      $('winMessage').textContent = deaths<15 ? "OK YOU'RE CRACKED 😤" : "YOU DID IT (finally) 😒";
+      $('winMessage').textContent = deaths<50 ? "YOU ARE A GAMING GOD 🏆" : "YOU DID IT (finally) 😒";
       $('winDeaths').textContent = `Total Deaths: ${deaths}`;
       ui.screens.win.classList.remove('hidden');
     }
@@ -897,163 +492,101 @@ function update() {
   particles.forEach(p => { p.x+=p.vx; p.y+=p.vy; p.vy+=0.15; p.life--; }); particles = particles.filter(p => p.life>0);
   popups.forEach(p => { p.y+=p.vy; p.life--; }); popups = popups.filter(p => p.life>0);
   
-  if(shakeT>0) shakeT--;
-  if(deathAnimT>0) deathAnimT--;
+  if(shakeT>0) shakeT--; if(deathAnimT>0) deathAnimT--;
 }
 
 function render() {
   if(!lvls[currLvl]) return;
   const L = lvls[currLvl];
-  
   ctx.clearRect(0, 0, W, H);
-  let sx = 0, sy = 0;
-  if(shakeT>0) { sx = (Math.random()-0.5)*shakeT; sy = (Math.random()-0.5)*shakeT; }
+  let sx = 0, sy = 0; if(shakeT>0) { sx = (Math.random()-0.5)*shakeT; sy = (Math.random()-0.5)*shakeT; }
   
   ctx.save(); ctx.translate(sx, sy);
-
-  const grad = ctx.createLinearGradient(0,0,0,H);
-  grad.addColorStop(0, L.bg); grad.addColorStop(1, '#000');
-  ctx.fillStyle = grad; ctx.fillRect(0,0,W,H);
-
-  ctx.strokeStyle = 'rgba(255,255,255,0.02)'; ctx.lineWidth = 1;
-  const gs = 50, ox = -camX % gs;
+  const grad = ctx.createLinearGradient(0,0,0,H); grad.addColorStop(0, L.bg); grad.addColorStop(1, '#000'); ctx.fillStyle = grad; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle = 'rgba(255,255,255,0.02)'; ctx.lineWidth = 1; const gs = 50, ox = -camX % gs;
   for(let x=ox; x<W; x+=gs) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
   for(let y=0; y<H; y+=gs) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
-
-  ctx.fillStyle = 'rgba(255,255,255,0.04)';
-  for(let i=0; i<20; i++) ctx.fillRect(((i*137+frame*0.3)%W+W)%W, ((i*89+frame*0.2)%H+H)%H, 2, 2);
+  ctx.fillStyle = 'rgba(255,255,255,0.04)'; for(let i=0; i<20; i++) ctx.fillRect(((i*137+frame*0.3)%W+W)%W, ((i*89+frame*0.2)%H+H)%H, 2, 2);
 
   ctx.save(); ctx.translate(-camX, 0);
 
   L.gravs.forEach(g => {
-    const gr = ctx.createLinearGradient(g.x,0,g.x+g.w,0);
-    gr.addColorStop(0,'rgba(170,68,255,0)'); gr.addColorStop(0.5,'rgba(170,68,255,0.15)'); gr.addColorStop(1,'rgba(170,68,255,0)');
-    ctx.fillStyle = gr; ctx.fillRect(g.x, g.y, g.w, g.h);
-    ctx.fillStyle = 'rgba(170,68,255,0.3)';
-    for(let ay=0; ay<g.h; ay+=40) {
-      const off = ((Date.now()/400)*30+ay)%g.h;
-      ctx.save(); ctx.translate(g.x+g.w/2, g.y+off); ctx.beginPath();
-      if(flipG) { ctx.moveTo(0,8); ctx.lineTo(5,-3); ctx.lineTo(-5,-3); } else { ctx.moveTo(0,-8); ctx.lineTo(5,3); ctx.lineTo(-5,3); }
-      ctx.fill(); ctx.restore();
-    }
+    const gr = ctx.createLinearGradient(g.x,0,g.x+g.w,0); gr.addColorStop(0,'rgba(170,68,255,0)'); gr.addColorStop(0.5,'rgba(170,68,255,0.15)'); gr.addColorStop(1,'rgba(170,68,255,0)'); ctx.fillStyle = gr; ctx.fillRect(g.x, g.y, g.w, g.h);
+    ctx.fillStyle = 'rgba(170,68,255,0.3)'; for(let ay=0; ay<g.h; ay+=40) { const off = ((Date.now()/400)*30+ay)%g.h; ctx.save(); ctx.translate(g.x+g.w/2, g.y+off); ctx.beginPath(); if(flipG) { ctx.moveTo(0,8); ctx.lineTo(5,-3); ctx.lineTo(-5,-3); } else { ctx.moveTo(0,-8); ctx.lineTo(5,3); ctx.lineTo(-5,3); } ctx.fill(); ctx.restore(); }
   });
 
   L.plats.forEach(p => {
     if(p.gone) { ctx.strokeStyle = 'rgba(255,170,0,0.15)'; ctx.setLineDash([3,4]); ctx.strokeRect(p.x, p.y, p.w, p.h); ctx.setLineDash([]); return; }
-    if(p.t==='fake' && !p.rev) {
-      ctx.fillStyle = L.gnd; ctx.fillRect(p.x, p.y, p.w, p.h);
-      ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fillRect(p.x, p.y, p.w, 2);
-      ctx.fillStyle = 'rgba(255,0,0,0.02)'; ctx.fillRect(p.x, p.y, p.w, p.h);
-      return;
-    }
+    if(p.t==='fake' && !p.rev) { ctx.fillStyle = L.gnd; ctx.fillRect(p.x, p.y, p.w, p.h); ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fillRect(p.x, p.y, p.w, 2); ctx.fillStyle = 'rgba(255,0,0,0.02)'; ctx.fillRect(p.x, p.y, p.w, p.h); return; }
     if(p.t==='fake' && p.rev) { ctx.strokeStyle = 'rgba(255,0,0,0.3)'; ctx.setLineDash([3,5]); ctx.strokeRect(p.x, p.y, p.w, p.h); ctx.setLineDash([]); return; }
-    if(p.t==='dis' && p.touched && p.timer>0) {
-      ctx.fillStyle = Math.sin(p.timer*0.45)>0 ? '#ff6600' : L.gnd; ctx.globalAlpha = 0.5 + (p.timer/p.d)*0.5;
-    } else { ctx.fillStyle = L.gnd; ctx.globalAlpha = 1; }
-    
-    ctx.fillRect(p.x+p.shx, p.y, p.w, p.h); ctx.globalAlpha = 1;
-    ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fillRect(p.x+p.shx, p.y, p.w, 2);
-    ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(p.x+p.shx, p.y+p.h-3, p.w, 3);
+    if(p.t==='dis' && p.touched && p.timer>0) { ctx.fillStyle = Math.sin(p.timer*0.45)>0 ? '#ff6600' : L.gnd; ctx.globalAlpha = 0.5 + (p.timer/p.d)*0.5; } else { ctx.fillStyle = L.gnd; ctx.globalAlpha = 1; }
+    ctx.fillRect(p.x+p.shx, p.y, p.w, p.h); ctx.globalAlpha = 1; ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fillRect(p.x+p.shx, p.y, p.w, 2); ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(p.x+p.shx, p.y+p.h-3, p.w, 3);
   });
 
   ctx.fillStyle = '#ff2244'; ctx.shadowColor = '#ff0000'; ctx.shadowBlur = 10;
-  L.spks.forEach(s => {
-    const sw = s.w / Math.max(1, Math.floor(s.w/10));
-    for(let i=0; i<s.w/sw; i++) {
-      ctx.beginPath(); ctx.moveTo(s.x+i*sw, s.y+s.h); ctx.lineTo(s.x+i*sw+sw/2, s.y); ctx.lineTo(s.x+(i+1)*sw, s.y+s.h); ctx.fill();
-    }
-  }); ctx.shadowBlur = 0;
+  L.spks.forEach(s => { const sw = s.w / Math.max(1, Math.floor(s.w/10)); for(let i=0; i<s.w/sw; i++) { ctx.beginPath(); ctx.moveTo(s.x+i*sw, s.y+s.h); ctx.lineTo(s.x+i*sw+sw/2, s.y); ctx.lineTo(s.x+(i+1)*sw, s.y+s.h); ctx.fill(); } }); ctx.shadowBlur = 0;
 
   L.mspks.forEach(s => {
     ctx.strokeStyle = 'rgba(255,68,102,0.1)'; ctx.beginPath(); ctx.moveTo(s.sx+11, s.y+11); ctx.lineTo(s.ex+11, s.y+11); ctx.stroke();
-    ctx.fillStyle = '#ff4466'; ctx.shadowColor = '#ff0044'; ctx.shadowBlur = 12;
-    ctx.save(); ctx.translate(s.x+11, s.y+11); ctx.rotate(Date.now()/120);
+    ctx.fillStyle = '#ff4466'; ctx.shadowColor = '#ff0044'; ctx.shadowBlur = 12; ctx.save(); ctx.translate(s.x+11, s.y+11); ctx.rotate(Date.now()/120);
     for(let i=0; i<4; i++) { ctx.rotate(Math.PI/2); ctx.beginPath(); ctx.moveTo(0,-12); ctx.lineTo(4,0); ctx.lineTo(-4,0); ctx.fill(); }
-    ctx.fillStyle = '#ff8899'; ctx.beginPath(); ctx.arc(0,0,3,0,Math.PI*2); ctx.fill();
-    ctx.restore(); ctx.shadowBlur = 0;
+    ctx.fillStyle = '#ff8899'; ctx.beginPath(); ctx.arc(0,0,3,0,Math.PI*2); ctx.fill(); ctx.restore(); ctx.shadowBlur = 0;
   });
 
   L.ceils.forEach(c => {
-    if(c.cy<-25 && !c.trig) return;
-    ctx.fillStyle = c.trig ? '#dd4400' : '#885522'; ctx.shadowColor = '#ff6600'; ctx.shadowBlur = c.trig ? 20 : 5;
+    if(c.cy<-25 && !c.trig) return; ctx.fillStyle = c.trig ? '#dd4400' : '#885522'; ctx.shadowColor = '#ff6600'; ctx.shadowBlur = c.trig ? 20 : 5;
     ctx.fillRect(c.x, c.cy, c.w, c.h); ctx.shadowBlur = 0;
     if(!c.trig && Math.abs((P.x+P.w/2)-(c.x+c.w/2))<140) { ctx.fillStyle = `rgba(255,100,0,0.1)`; ctx.fillRect(c.x-5, 0, c.w+10, H); }
   });
 
   L.pads.forEach(b => {
-    const pls = Math.sin(Date.now()/150)*3;
-    ctx.fillStyle = '#00ffaa'; ctx.shadowColor = '#00ffaa'; ctx.shadowBlur = 10+pls;
-    ctx.fillRect(b.x, b.y-pls/2, b.w, b.h+pls);
-    ctx.fillStyle = '#00cc88'; ctx.fillRect(b.x+1, b.y-pls/2+1, b.w-2, 2); ctx.shadowBlur = 0;
+    const pls = Math.sin(Date.now()/150)*3; ctx.fillStyle = '#00ffaa'; ctx.shadowColor = '#00ffaa'; ctx.shadowBlur = 10+pls;
+    ctx.fillRect(b.x, b.y-pls/2, b.w, b.h+pls); ctx.fillStyle = '#00cc88'; ctx.fillRect(b.x+1, b.y-pls/2+1, b.w-2, 2); ctx.shadowBlur = 0;
   });
 
   const d = L.door, dp = Math.sin(Date.now()/200)*4;
-  ctx.shadowColor = '#00ff00'; ctx.shadowBlur = 20+dp;
-  ctx.fillStyle = '#44ff44'; ctx.fillRect(d.x-3, d.y-3, d.w+6, d.h+6); ctx.shadowBlur = 0;
-  ctx.fillStyle = '#002200'; ctx.fillRect(d.x+3, d.y+3, d.w-6, d.h-6);
-  ctx.fillStyle = '#33cc33'; ctx.fillRect(d.x+7, d.y+7, d.w-14, d.h-14);
+  ctx.shadowColor = '#00ff00'; ctx.shadowBlur = 20+dp; ctx.fillStyle = '#44ff44'; ctx.fillRect(d.x-3, d.y-3, d.w+6, d.h+6); ctx.shadowBlur = 0;
+  ctx.fillStyle = '#002200'; ctx.fillRect(d.x+3, d.y+3, d.w-6, d.h-6); ctx.fillStyle = '#33cc33'; ctx.fillRect(d.x+7, d.y+7, d.w-14, d.h-14);
 
-  P.trail.forEach(t => {
-    const a = t.l/10; ctx.fillStyle = `rgba(68,170,255,${a*0.3})`;
-    ctx.beginPath(); ctx.arc(t.x, t.y, 2.5*a, 0, Math.PI*2); ctx.fill();
-  });
+  // Mythpat Level Fake Door
+  if (currLvl === 14) {
+    const fd = {x:2700, y:378, w:42, h:62}; ctx.fillStyle = '#44ff44'; ctx.fillRect(fd.x-3, fd.y-3, fd.w+6, fd.h+6);
+    ctx.fillStyle = '#002200'; ctx.fillRect(fd.x+3, fd.y+3, fd.w-6, fd.h-6); ctx.fillStyle = '#33cc33'; ctx.fillRect(fd.x+7, fd.y+7, fd.w-14, fd.h-14);
+  }
+
+  P.trail.forEach(t => { const a = t.l/10; ctx.fillStyle = `rgba(68,170,255,${a*0.3})`; ctx.beginPath(); ctx.arc(t.x, t.y, 2.5*a, 0, Math.PI*2); ctx.fill(); });
 
   if(P.alive) {
-    ctx.save(); ctx.translate(P.x+P.w/2, P.y+P.h/2);
-    if(flipG) ctx.scale(1,-1); ctx.scale(P.sq, P.st);
-    ctx.shadowColor = '#00aaff'; ctx.shadowBlur = 15; ctx.fillStyle = '#00aaff';
-    ctx.fillRect(-P.w/2, -P.h/2, P.w, P.h); ctx.shadowBlur = 0;
-    ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.fillRect(-P.w/2+2, -P.h/2+2, P.w-4, P.h*0.5);
-    
-    ctx.fillStyle = '#000'; const ey = -2, px = P.face;
-    ctx.fillRect(-6, ey, 4, 4); ctx.fillRect(3, ey, 4, 4);
-    ctx.fillStyle = '#fff'; ctx.fillRect(-5+px, ey+1, 2, 2); ctx.fillRect(4+px, ey+1, 2, 2);
-    ctx.fillStyle = '#000';
+    ctx.save(); ctx.translate(P.x+P.w/2, P.y+P.h/2); if(flipG) ctx.scale(1,-1); ctx.scale(P.sq, P.st);
+    ctx.shadowColor = '#00aaff'; ctx.shadowBlur = 15; ctx.fillStyle = '#00aaff'; ctx.fillRect(-P.w/2, -P.h/2, P.w, P.h); ctx.shadowBlur = 0; ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.fillRect(-P.w/2+2, -P.h/2+2, P.w-4, P.h*0.5);
+    ctx.fillStyle = '#000'; const ey = -2, px = P.face; ctx.fillRect(-6, ey, 4, 4); ctx.fillRect(3, ey, 4, 4);
+    ctx.fillStyle = '#fff'; ctx.fillRect(-5+px, ey+1, 2, 2); ctx.fillRect(4+px, ey+1, 2, 2); ctx.fillStyle = '#000';
     if(weakJ) { ctx.beginPath(); ctx.moveTo(-4,7); ctx.quadraticCurveTo(0,4,4,7); ctx.lineWidth=1.5; ctx.strokeStyle='#000'; ctx.stroke(); }
-    else if(invT>0) { ctx.fillRect(-3,6,7,2); }
-    else if(darkT>0) { ctx.beginPath(); ctx.arc(0,7,3,0,Math.PI*2); ctx.fill(); }
-    else if(Math.abs(P.vy)>6) { ctx.beginPath(); ctx.ellipse(0,7,3,4,0,0,Math.PI*2); ctx.fill(); }
-    else { ctx.fillRect(-3,6,7,2); }
-    ctx.restore();
+    else if(invT>0) { ctx.fillRect(-3,6,7,2); } else if(darkT>0) { ctx.beginPath(); ctx.arc(0,7,3,0,Math.PI*2); ctx.fill(); } else if(Math.abs(P.vy)>6) { ctx.beginPath(); ctx.ellipse(0,7,3,4,0,0,Math.PI*2); ctx.fill(); } else { ctx.fillRect(-3,6,7,2); } ctx.restore();
   }
 
-  if(!P.alive && deathAnimT>0) {
-    ctx.globalAlpha = deathAnimT/25; ctx.fillStyle = '#ff0040'; ctx.font = '20px "Press Start 2P", monospace'; ctx.textAlign = 'center';
-    ctx.fillText('💀', lastDeathX+12, P.y-deathAnimT*2); ctx.globalAlpha = 1;
-  }
-
+  if(!P.alive && deathAnimT>0) { ctx.globalAlpha = deathAnimT/25; ctx.fillStyle = '#ff0040'; ctx.font = '20px "Press Start 2P", monospace'; ctx.textAlign = 'center'; ctx.fillText('💀', lastDeathX+12, P.y-deathAnimT*2); ctx.globalAlpha = 1; }
   particles.forEach(p => { ctx.globalAlpha = Math.min(p.life/30,1); ctx.fillStyle = p.c; ctx.fillRect(p.x-p.sz/2, p.y-p.sz/2, p.sz, p.sz); }); ctx.globalAlpha = 1;
   popups.forEach(p => { ctx.globalAlpha = p.life/p.max; ctx.fillStyle = p.col; ctx.font = 'bold 10px "Press Start 2P", monospace'; ctx.textAlign = 'center'; ctx.fillText(p.txt, p.x, p.y); }); ctx.globalAlpha = 1;
 
-  if(windF) {
-    ctx.strokeStyle = 'rgba(200,200,255,0.1)'; ctx.lineWidth = 1;
-    for(let i=0; i<20; i++) { ctx.beginPath(); const wx = camX+(frame*3+i*50)%W, wy = (i*73)%H; ctx.moveTo(wx, wy); ctx.lineTo(wx+Math.sign(windF)*(15+Math.random()*25), wy); ctx.stroke(); }
-  }
-
+  if(windF) { ctx.strokeStyle = 'rgba(200,200,255,0.1)'; ctx.lineWidth = 1; for(let i=0; i<20; i++) { ctx.beginPath(); const wx = camX+(frame*3+i*50)%W, wy = (i*73)%H; ctx.moveTo(wx, wy); ctx.lineTo(wx+Math.sign(windF)*(15+Math.random()*25), wy); ctx.stroke(); } }
   ctx.restore(); 
 
   if(darkT>0) {
     ctx.fillStyle = 'rgba(0,0,0,0.95)'; ctx.fillRect(0,0,W,H);
-    if(P.alive) {
-      const px = P.x+P.w/2-camX, py = P.y+P.h/2;
-      ctx.save(); ctx.globalCompositeOperation = 'destination-out';
-      const rg = ctx.createRadialGradient(px, py, 0, px, py, 65);
-      rg.addColorStop(0, 'rgba(0,0,0,1)'); rg.addColorStop(0.5, 'rgba(0,0,0,0.9)'); rg.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(px, py, 65, 0, Math.PI*2); ctx.fill(); ctx.restore();
-    }
+    if(P.alive) { const px = P.x+P.w/2-camX, py = P.y+P.h/2; ctx.save(); ctx.globalCompositeOperation = 'destination-out'; const rg = ctx.createRadialGradient(px, py, 0, px, py, 65); rg.addColorStop(0, 'rgba(0,0,0,1)'); rg.addColorStop(0.5, 'rgba(0,0,0,0.9)'); rg.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(px, py, 65, 0, Math.PI*2); ctx.fill(); ctx.restore(); }
   }
 
   if(flipG) { ctx.fillStyle = 'rgba(170,68,255,0.3)'; ctx.font = 'bold 9px "Press Start 2P", monospace'; ctx.textAlign = 'center'; ctx.fillText('⬆ GRAVITY FLIPPED ⬆', W/2, 18); }
-  
   ctx.restore();
 }
 
 function loop() { update(); render(); requestAnimationFrame(loop); }
 
-$('startBtn').onclick = () => { ui.screens.start.classList.add('hidden'); buildLvls(); loadLvl(0); state = 'play'; deaths = 0; ui.death.textContent = '☠ 0'; showTaunt("GOOD LUCK 😈"); };
-$('retryBtn').onclick = () => { ui.screens.dead.classList.add('hidden'); loadLvl(currLvl); state = 'play'; };
-$('nextBtn').onclick = () => { ui.screens.comp.classList.add('hidden'); currLvl++; loadLvl(currLvl); state = 'play'; };
-$('restartBtn').onclick = () => { ui.screens.win.classList.add('hidden'); buildLvls(); loadLvl(0); state = 'play'; deaths = 0; ui.death.textContent = '☠ 0'; };
+$('startBtn').onclick = () => { initAudio(); ui.screens.start.classList.add('hidden'); buildLvls(); loadLvl(0); state = 'play'; deaths = 0; ui.death.textContent = '☠ 0'; showTaunt("GOOD LUCK 😈"); };
+$('retryBtn').onclick = () => { ui.screens.dead.classList.add('hidden'); loadLvl(currLvl); state = 'play'; keys['Space']=false; };
+$('nextBtn').onclick = () => { ui.screens.comp.classList.add('hidden'); currLvl++; loadLvl(currLvl); state = 'play'; keys['Space']=false; };
+$('restartBtn').onclick = () => { ui.screens.win.classList.add('hidden'); buildLvls(); loadLvl(0); state = 'play'; deaths = 0; ui.death.textContent = '☠ 0'; keys['Space']=false; };
 
 loop();
 </script>
